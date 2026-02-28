@@ -6,7 +6,6 @@ struct QRScannerView: View {
     @Binding var selectedTab: AppTab
     @Binding var navigationPath: NavigationPath
 
-    @State private var nfcReader = NFCReader()
     @State private var alertMessage: String?
     @State private var isShowingAlert = false
     @State private var isLoading = false
@@ -35,18 +34,6 @@ struct QRScannerView: View {
                     )
                 }
 
-                if DataScannerViewController.isSupported && DataScannerViewController.isAvailable && !isLoading {
-                    Button {
-                        readNFC()
-                    } label: {
-                        Label("Read NFC", systemImage: "wave.3.right")
-                            .font(.headline)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background(.ultraThinMaterial, in: Capsule())
-                    }
-                    .padding(.bottom, 16)
-                }
             }
             .navigationTitle("Scan")
             .alert("Scan Error", isPresented: $isShowingAlert) {
@@ -80,29 +67,6 @@ struct QRScannerView: View {
         }
 
         navigateToSpool(id: spoolId)
-    }
-
-    private func readNFC() {
-        guard !isLoading else { return }
-        nfcReader.read { result in
-            MainActor.assumeIsolated {
-                switch result {
-                case .success(let url):
-                    guard let deepLink = DeepLinkHandler.parse(url: url),
-                          case .spool(let id) = deepLink else {
-                        showAlert("NFC tag doesn't contain a valid spool URL.")
-                        return
-                    }
-                    navigateToSpool(id: id)
-                case .failure(let error):
-                    if error is NFCReader.NFCReadError,
-                       case .sessionCancelled = error as! NFCReader.NFCReadError {
-                        return
-                    }
-                    showAlert(error.localizedDescription)
-                }
-            }
-        }
     }
 
     private func navigateToSpool(id: Int) {
