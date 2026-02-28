@@ -12,6 +12,10 @@ iOS app for browsing [Spoolman](https://github.com/Donkie/Spoolman) filament spo
 - Scan QR codes to look up spools
 - Deep link support for `spoolbrowser://` and `spoolman://` URL schemes
 
+## Branches
+
+The `no-rfid` branch removes all NFC tag reading/writing features. Use this branch if you don't have a paid Apple Developer Program membership, since the NFC entitlement requires one.
+
 ## Requirements
 
 - iOS 18.0+
