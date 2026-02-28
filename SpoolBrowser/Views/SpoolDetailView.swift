@@ -66,7 +66,9 @@ struct SpoolDetailView: View {
                     LabeledContent("Used", value: String(format: "%.1fg", used))
                 }
                 if let filament = spool.filament {
-                    LabeledContent("Filament", value: "#\(filament.id) \(filament.displayName)")
+                    NavigationLink(value: filament) {
+                        LabeledContent("Filament", value: "#\(filament.id) \(filament.displayName)")
+                    }
                 }
                 if let location = spool.location, !location.isEmpty {
                     LabeledContent("Location", value: location)
