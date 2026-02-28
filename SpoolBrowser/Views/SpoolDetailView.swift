@@ -77,15 +77,18 @@ struct SpoolDetailView: View {
             }
 
             Section("Parameters") {
-                LabeledContent("Bed Temp", value: bedTempDisplay)
-                LabeledContent("Nozzle Temp", value: nozzleTempDisplay)
-                if let info = spool.customInfo {
-                    if info.printSpeedMin != nil || info.printSpeedMax != nil {
-                        LabeledContent("Print Speed", value: formatRange(min: info.printSpeedMin, max: info.printSpeedMax, unit: "mm/s"))
-                    }
-                    if info.dryingTempMin != nil || info.dryingTempMax != nil || info.dryingTime != nil {
-                        LabeledContent("Drying", value: dryingDisplay(info: info))
-                    }
+                let params = spool.customParameters
+                if let temp = params.nozzleTemp {
+                    LabeledContent("Nozzle Temp", value: temp)
+                }
+                if let temp = params.bedTemp {
+                    LabeledContent("Bed Temp", value: temp)
+                }
+                if let speed = params.printSpeed {
+                    LabeledContent("Print Speed", value: speed)
+                }
+                if let drying = params.drying {
+                    LabeledContent("Drying", value: drying)
                 }
             }
 
@@ -189,51 +192,6 @@ struct SpoolDetailView: View {
         }
         .navigationTitle("Spool #\(spool.id)")
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-    // MARK: - Parameter Display
-
-    private var bedTempDisplay: String {
-        if let info = spool.customInfo, (info.bedTempMin != nil || info.bedTempMax != nil) {
-            return formatRange(min: info.bedTempMin, max: info.bedTempMax, unit: "\u{00B0}C")
-        }
-        if let temp = spool.filament?.settingsBedTemp {
-            return "\(temp)\u{00B0}C"
-        }
-        return "-"
-    }
-
-    private var nozzleTempDisplay: String {
-        if let info = spool.customInfo {
-            return formatRange(min: info.nozzleTempMin, max: info.nozzleTempMax, unit: "\u{00B0}C")
-        }
-        if let temp = spool.filament?.settingsExtruderTemp {
-            return "\(temp)\u{00B0}C"
-        }
-        return "-"
-    }
-
-    private func formatRange(min: Int?, max: Int?, unit: String) -> String {
-        switch (min, max) {
-        case let (min?, max?): return "\(min)-\(max) \(unit)"
-        case let (min?, nil): return "\(min) \(unit)"
-        case let (nil, max?): return "\(max) \(unit)"
-        case (nil, nil): return "-"
-        }
-    }
-
-    private func formatRange(min: Int, max: Int, unit: String) -> String {
-        if min == max { return "\(min) \(unit)" }
-        return "\(min)-\(max) \(unit)"
-    }
-
-    private func dryingDisplay(info: CustomFilamentInfo) -> String {
-        let temp = formatRange(min: info.dryingTempMin, max: info.dryingTempMax, unit: "\u{00B0}C")
-        if let time = info.dryingTime {
-            if temp == "-" { return "\(time)h" }
-            return "\(temp) / \(time)h"
-        }
-        return temp
     }
 
     // MARK: - Actions

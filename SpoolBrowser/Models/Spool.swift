@@ -51,4 +51,68 @@ struct Spool: Codable, Identifiable, Hashable, Sendable {
         guard let filament else { return nil }
         return CustomFilamentInfo(filament: filament)
     }
+
+    struct CustomParameters {
+        let nozzleTemp: String?
+        let bedTemp: String?
+        let printSpeed: String?
+        let drying: String?
+
+        init(filament: Filament?) {
+            let extra = filament?.extra
+
+            if let range = Self.extractRange(extra, key: "nozzle_temp") {
+                nozzleTemp = Self.formatRange(range.0, range.1, unit: "\u{00B0}C")
+            } else if let temp = filament?.settingsExtruderTemp {
+                nozzleTemp = "\(temp)\u{00B0}C"
+            } else {
+                nozzleTemp = nil
+            }
+
+            if let range = Self.extractRange(extra, key: "bed_temp") {
+                bedTemp = Self.formatRange(range.0, range.1, unit: "\u{00B0}C")
+            } else if let temp = filament?.settingsBedTemp {
+                bedTemp = "\(temp)\u{00B0}C"
+            } else {
+                bedTemp = nil
+            }
+
+            if let range = Self.extractRange(extra, key: "printing_speed") {
+                printSpeed = Self.formatRange(range.0, range.1, unit: "mm/s")
+            } else {
+                printSpeed = nil
+            }
+
+            let tempRange = Self.extractRange(extra, key: "drying_temperature")
+            let dryingTime = extra?["drying_time"].flatMap { Int($0) }
+            switch (tempRange, dryingTime) {
+            case let (range?, time?):
+                drying = "\(Self.formatRange(range.0, range.1, unit: "\u{00B0}C")) / \(time)h"
+            case let (range?, nil):
+                drying = Self.formatRange(range.0, range.1, unit: "\u{00B0}C")
+            case let (nil, time?):
+                drying = "\(time)h"
+            case (nil, nil):
+                drying = nil
+            }
+        }
+
+        private static func extractRange(_ extra: [String: String]?, key: String) -> (Int, Int)? {
+            guard let value = extra?[key], !value.isEmpty,
+                  let data = value.data(using: .utf8),
+                  let arr = try? JSONDecoder().decode([Int].self, from: data),
+                  arr.count == 2
+            else { return nil }
+            return (arr[0], arr[1])
+        }
+
+        private static func formatRange(_ min: Int, _ max: Int, unit: String) -> String {
+            if min == max { return "\(min) \(unit)" }
+            return "\(min)-\(max) \(unit)"
+        }
+    }
+
+    var customParameters: CustomParameters {
+        CustomParameters(filament: filament)
+    }
 }
