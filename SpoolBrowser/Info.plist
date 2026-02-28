@@ -30,6 +30,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>NFC access is needed to write spool URLs to NFC tags</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
