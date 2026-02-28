@@ -1,5 +1,11 @@
 import SwiftUI
 
+enum SpoolSortOption: String, CaseIterable {
+    case vendor = "Vendor"
+    case material = "Material"
+    case colorName = "Color Name"
+}
+
 struct SpoolListView: View {
     var spoolmanService: SpoolmanService
     @Binding var navigationPath: NavigationPath
@@ -10,6 +16,7 @@ struct SpoolListView: View {
     @State private var errorMessage: String?
     @State private var selectedVendor: String?
     @State private var selectedMaterial: String?
+    @State private var sortOption: SpoolSortOption = .vendor
     @State private var showingFilterSheet = false
 
     private var availableVendors: [String] {
@@ -21,7 +28,7 @@ struct SpoolListView: View {
     }
 
     private var hasActiveFilters: Bool {
-        selectedVendor != nil || selectedMaterial != nil
+        selectedVendor != nil || selectedMaterial != nil || sortOption != .vendor
     }
 
     var filteredSpools: [Spool] {
@@ -39,6 +46,14 @@ struct SpoolListView: View {
                 (spool.vendorName?.lowercased().contains(term) == true) ||
                 (spool.materialName?.lowercased().contains(term) == true)
             }
+        }
+        switch sortOption {
+        case .vendor:
+            result.sort { ($0.vendorName ?? "") < ($1.vendorName ?? "") }
+        case .material:
+            result.sort { ($0.materialName ?? "") < ($1.materialName ?? "") }
+        case .colorName:
+            result.sort { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
         }
         return result
     }
@@ -92,28 +107,41 @@ struct SpoolListView: View {
                 .sheet(isPresented: $showingFilterSheet) {
                     NavigationStack {
                         Form {
-                            Picker("Vendor", selection: $selectedVendor) {
-                                Text("All Vendors").tag(String?.none)
-                                ForEach(availableVendors, id: \.self) { vendor in
-                                    Text(vendor).tag(Optional(vendor))
+                            Section("Sort By") {
+                                Picker("Sort By", selection: $sortOption) {
+                                    ForEach(SpoolSortOption.allCases, id: \.self) { option in
+                                        Text(option.rawValue).tag(option)
+                                    }
                                 }
+                                .pickerStyle(.inline)
+                                .labelsHidden()
                             }
-                            Picker("Material", selection: $selectedMaterial) {
-                                Text("All Materials").tag(String?.none)
-                                ForEach(availableMaterials, id: \.self) { material in
-                                    Text(material).tag(Optional(material))
+                            Section("Filter") {
+                                Picker("Vendor", selection: $selectedVendor) {
+                                    Text("All Vendors").tag(String?.none)
+                                    ForEach(availableVendors, id: \.self) { vendor in
+                                        Text(vendor).tag(Optional(vendor))
+                                    }
                                 }
-                            }
-                            if hasActiveFilters {
-                                Button("Reset Filters", role: .destructive) {
-                                    selectedVendor = nil
-                                    selectedMaterial = nil
+                                Picker("Material", selection: $selectedMaterial) {
+                                    Text("All Materials").tag(String?.none)
+                                    ForEach(availableMaterials, id: \.self) { material in
+                                        Text(material).tag(Optional(material))
+                                    }
                                 }
                             }
                         }
-                        .navigationTitle("Filters")
+                        .navigationTitle("Sort & Filter")
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Reset") {
+                                    selectedVendor = nil
+                                    selectedMaterial = nil
+                                    sortOption = .vendor
+                                }
+                                .disabled(!hasActiveFilters)
+                            }
                             ToolbarItem(placement: .confirmationAction) {
                                 Button("Done") {
                                     showingFilterSheet = false
@@ -135,7 +163,6 @@ struct SpoolListView: View {
         Task {
             do {
                 spools = try await spoolmanService.fetchSpools()
-                    .sorted { ($0.vendorName ?? "") < ($1.vendorName ?? "") }
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -147,7 +174,6 @@ struct SpoolListView: View {
         guard spoolmanService.isConfigured else { return }
         do {
             spools = try await spoolmanService.fetchSpools()
-                .sorted { ($0.vendorName ?? "") < ($1.vendorName ?? "") }
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
