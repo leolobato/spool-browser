@@ -65,6 +65,9 @@ struct SpoolDetailView: View {
                 if let used = spool.usedWeight {
                     LabeledContent("Used", value: String(format: "%.1fg", used))
                 }
+                if let filament = spool.filament {
+                    LabeledContent("Filament", value: "#\(filament.id) \(filament.displayName)")
+                }
                 if let location = spool.location, !location.isEmpty {
                     LabeledContent("Location", value: location)
                 }
@@ -137,12 +140,10 @@ struct SpoolDetailView: View {
 
             // Actions
             Section {
-                if case .connected = labelPrinterService.connectionState {
-                    Button {
-                        showLabelPreview = true
-                    } label: {
-                        Label("Print Label", systemImage: "printer")
-                    }
+                Button {
+                    showLabelPreview = true
+                } label: {
+                    Label("Print Label", systemImage: "printer")
                 }
 
                 Button {
