@@ -12,6 +12,12 @@ iOS app for browsing [Spoolman](https://github.com/Donkie/Spoolman) filament spo
 - Scan QR codes to look up spools
 - Deep link support for `spoolbrowser://` and `spoolman://` URL schemes
 
+<p align="center">
+  <img src="screenshots/spool-list.png" width="250" alt="Spool list">
+  <img src="screenshots/spool-detail.png" width="250" alt="Spool detail">
+  <img src="screenshots/label-preview.png" width="250" alt="Label preview">
+</p>
+
 ## Branches
 
 The `no-rfid` branch removes all NFC tag reading/writing features. Use this branch if you don't have a paid Apple Developer Program membership, since the NFC entitlement requires one.
@@ -33,8 +39,6 @@ xcodebuild build -scheme SpoolBrowser -destination 'platform=iOS Simulator,name=
 xcodebuild test -scheme SpoolBrowser -destination 'platform=iOS Simulator,name=iPhone 16'
 ```
 
-### Development Team
-
 To sign the app for a physical device, copy the example config and set your Apple Development Team ID:
 
 ```bash
@@ -44,8 +48,6 @@ xcodegen generate
 ```
 
 `Local.xcconfig` is gitignored and won't be committed.
-
-**Note:** NFC tag reading/writing requires the Near Field Communication Tag Reading entitlement, which is only available with a paid Apple Developer Program membership.
 
 ## Label Printing
 
@@ -61,8 +63,6 @@ SpoolBrowser registers two URL schemes: `spoolbrowser://` and `spoolman://`.
 |---|---|
 | `spoolbrowser://spool/{id}` | Open spool detail view |
 | `spoolbrowser://filament/{id}` | Open filament detail view |
-| `spoolman://spool/{id}` | Open spool detail view |
-| `spoolman://filament/{id}` | Open filament detail view |
 
 ## Spoolman Extra Fields
 
