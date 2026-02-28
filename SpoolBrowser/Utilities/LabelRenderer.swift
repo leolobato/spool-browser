@@ -110,7 +110,7 @@ struct LabelRenderer {
             drawBrand(data.brand, in: gc, scale: s)
 
             // Material bar
-            drawMaterialBar("\(data.material)/\(data.colorName)", in: gc, scale: s)
+            drawMaterialBar(data.material, in: gc, scale: s)
 
             // Color name
             drawText(

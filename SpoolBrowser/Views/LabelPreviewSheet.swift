@@ -31,6 +31,7 @@ struct LabelPreviewSheet: View {
                                 .foregroundStyle(.secondary)
                         }
                     } else {
+                        let isConnected = if case .connected = labelPrinterService.connectionState { true } else { false }
                         Button {
                             printLabel()
                         } label: {
@@ -39,6 +40,7 @@ struct LabelPreviewSheet: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .padding(.horizontal)
+                        .disabled(!isConnected)
                     }
                 } else {
                     ProgressView("Rendering label...")
