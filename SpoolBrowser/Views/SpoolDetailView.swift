@@ -97,12 +97,12 @@ struct SpoolDetailView: View {
                 }
             }
 
-            // Bambu Link Status
-            Section("BambuStudio Profile") {
+            // Slicer Link Status
+            Section("Slicer Profile") {
                 if let info = spool.customInfo {
-                    LabeledContent("Filament ID", value: info.trayInfoIdx)
-                    LabeledContent("Setting ID", value: info.settingId)
-                    LabeledContent("Type", value: info.trayType)
+                    LabeledContent("Filament ID", value: displayValue(info.trayInfoIdx))
+                    LabeledContent("Setting ID", value: displayValue(info.settingId))
+                    LabeledContent("Type", value: displayValue(info.trayType))
 
                     Button {
                         unlinkProfile()
@@ -122,7 +122,7 @@ struct SpoolDetailView: View {
                             showTrayPicker = true
                         } label: {
                             HStack {
-                                Label("Set in BambuStudio", systemImage: "desktopcomputer")
+                                Label("Set in AMS", systemImage: "desktopcomputer")
                                 if isSendingToHelper {
                                     Spacer()
                                     ProgressView()
@@ -135,7 +135,7 @@ struct SpoolDetailView: View {
                     Button {
                         showProfilePicker = true
                     } label: {
-                        Label("Link to BambuStudio Profile", systemImage: "link.badge.plus")
+                        Label("Link to Slicer Profile", systemImage: "link.badge.plus")
                     }
                 }
             }
@@ -171,7 +171,7 @@ struct SpoolDetailView: View {
                     filamentId: filamentId,
                     spoolmanService: spoolmanService,
                     spoolHelperService: spoolHelperService,
-                    onLinked: { refreshSpool() }
+                    onLinked: { Task { await refreshSpool() } }
                 )
             }
         }
@@ -195,6 +195,9 @@ struct SpoolDetailView: View {
         }
         .navigationTitle("Spool #\(spool.id)")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await refreshSpool()
+        }
     }
 
     // MARK: - Actions
@@ -205,7 +208,7 @@ struct SpoolDetailView: View {
         Task {
             do {
                 try await spoolmanService.unlinkFilament(id: filamentId)
-                refreshSpool()
+                await refreshSpool()
             } catch {
                 helperAlertTitle = "Error"
                 helperAlertMessage = error.localizedDescription
@@ -215,12 +218,14 @@ struct SpoolDetailView: View {
         }
     }
 
-    private func refreshSpool() {
-        Task {
-            if let updated = try? await spoolmanService.fetchSpool(id: spool.id) {
-                spool = updated
-            }
+    private func refreshSpool() async {
+        if let updated = try? await spoolmanService.fetchSpool(id: spool.id) {
+            spool = updated
         }
+    }
+
+    private func displayValue(_ value: String) -> String {
+        value.isEmpty ? "-" : value
     }
 
     private func sendToHelper(tray: Int) {

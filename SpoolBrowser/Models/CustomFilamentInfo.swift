@@ -3,8 +3,8 @@ import Foundation
 struct CustomFilamentInfo: Sendable {
     let trayInfoIdx: String
     let settingId: String
-    let nozzleTempMin: Int
-    let nozzleTempMax: Int
+    let nozzleTempMin: Int?
+    let nozzleTempMax: Int?
     let trayType: String
     let bedTempMin: Int?
     let bedTempMax: Int?
@@ -17,9 +17,9 @@ struct CustomFilamentInfo: Sendable {
     init(
         trayInfoIdx: String,
         settingId: String,
-        nozzleTempMin: Int,
-        nozzleTempMax: Int,
-        trayType: String,
+        nozzleTempMin: Int? = nil,
+        nozzleTempMax: Int? = nil,
+        trayType: String = "",
         bedTempMin: Int? = nil,
         bedTempMax: Int? = nil,
         dryingTempMin: Int? = nil,
@@ -45,17 +45,28 @@ struct CustomFilamentInfo: Sendable {
     init?(filament: Filament) {
         guard let extra = filament.extra else { return nil }
 
-        guard let filamentId = Self.extractText(extra, key: "bambu_filament_id"),
-              let settingId = Self.extractText(extra, key: "bambu_setting_id"),
-              let filamentType = Self.extractText(extra, key: "bambu_filament_type"),
-              let nozzleRange = Self.extractRange(extra, key: "nozzle_temp")
-        else { return nil }
+        let filamentId = Self.extractText(extra, key: "bambu_filament_id") ?? ""
+        let settingId = Self.extractText(extra, key: "bambu_setting_id") ?? ""
+        let filamentType = Self.extractText(extra, key: "bambu_filament_type")
+            ?? filament.material
+            ?? ""
+
+        // Keep linked-state semantics aligned with spool-helper.
+        guard !filamentId.isEmpty || !settingId.isEmpty else { return nil }
 
         self.trayInfoIdx = filamentId
         self.settingId = settingId
         self.trayType = filamentType
-        self.nozzleTempMin = nozzleRange.0
-        self.nozzleTempMax = nozzleRange.1
+        if let nozzleRange = Self.extractRange(extra, key: "nozzle_temp") {
+            self.nozzleTempMin = nozzleRange.0
+            self.nozzleTempMax = nozzleRange.1
+        } else if let temp = filament.settingsExtruderTemp {
+            self.nozzleTempMin = temp
+            self.nozzleTempMax = temp
+        } else {
+            self.nozzleTempMin = nil
+            self.nozzleTempMax = nil
+        }
 
         if let range = Self.extractRange(extra, key: "bed_temp") {
             self.bedTempMin = range.0

@@ -47,11 +47,13 @@ struct FilamentDetailView: View {
             }
 
             if let info = CustomFilamentInfo(filament: filament) {
-                Section("BambuStudio Profile") {
-                    LabeledContent("Filament ID", value: info.trayInfoIdx)
-                    LabeledContent("Setting ID", value: info.settingId)
-                    LabeledContent("Type", value: info.trayType)
-                    LabeledContent("Nozzle Temp", value: "\(info.nozzleTempMin)-\(info.nozzleTempMax)\u{00B0}C")
+                Section("Slicer Profile") {
+                    LabeledContent("Filament ID", value: displayValue(info.trayInfoIdx))
+                    LabeledContent("Setting ID", value: displayValue(info.settingId))
+                    LabeledContent("Type", value: displayValue(info.trayType))
+                    if let min = info.nozzleTempMin, let max = info.nozzleTempMax {
+                        LabeledContent("Nozzle Temp", value: "\(min)-\(max)\u{00B0}C")
+                    }
                     if let min = info.bedTempMin, let max = info.bedTempMax {
                         LabeledContent("Bed Temp", value: "\(min)-\(max)\u{00B0}C")
                     }
@@ -69,5 +71,9 @@ struct FilamentDetailView: View {
         }
         .navigationTitle("Filament #\(filament.id)")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func displayValue(_ value: String) -> String {
+        value.isEmpty ? "-" : value
     }
 }

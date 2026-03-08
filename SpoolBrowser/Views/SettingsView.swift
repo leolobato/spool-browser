@@ -136,7 +136,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Spoolman Extra Fields")
                 } footer: {
-                    Text("Custom filament fields in Spoolman for BambuStudio profile data.")
+                    Text("Custom filament fields in Spoolman for slicer profile data.")
                 }
 
                 Section {

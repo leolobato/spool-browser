@@ -132,6 +132,53 @@ struct ModelDecodingTests {
         #expect(info?.dryingTime == nil)
     }
 
+    @Test("CustomFilamentInfo is linked with ID fields only")
+    func customInfoLinkedWithoutTemps() throws {
+        let json = """
+        {
+            "id": 10,
+            "name": "Legacy Link",
+            "material": "PLA",
+            "extra": {
+                "bambu_filament_id": "\\"GFL99\\"",
+                "bambu_setting_id": "\\"GFSA00\\""
+            }
+        }
+        """
+
+        let data = json.data(using: .utf8)!
+        let filament = try JSONDecoder().decode(Filament.self, from: data)
+        let info = CustomFilamentInfo(filament: filament)
+
+        #expect(info != nil)
+        #expect(info?.trayInfoIdx == "GFL99")
+        #expect(info?.settingId == "GFSA00")
+        #expect(info?.trayType == "PLA")
+        #expect(info?.nozzleTempMin == nil)
+        #expect(info?.nozzleTempMax == nil)
+    }
+
+    @Test("CustomFilamentInfo is linked when only setting ID exists")
+    func customInfoLinkedWithSettingOnly() throws {
+        let json = """
+        {
+            "id": 10,
+            "name": "Setting-Only Link",
+            "extra": {
+                "bambu_setting_id": "\\"GFSA00\\""
+            }
+        }
+        """
+
+        let data = json.data(using: .utf8)!
+        let filament = try JSONDecoder().decode(Filament.self, from: data)
+        let info = CustomFilamentInfo(filament: filament)
+
+        #expect(info != nil)
+        #expect(info?.trayInfoIdx == "")
+        #expect(info?.settingId == "GFSA00")
+    }
+
     @Test("DeepLinkHandler parses spool URL")
     func deepLinkSpool() {
         let url = URL(string: "spoolbrowser://spool/42")!

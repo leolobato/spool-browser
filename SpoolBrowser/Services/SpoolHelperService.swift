@@ -222,7 +222,7 @@ enum SpoolHelperError: LocalizedError {
         case .notAvailable:
             "SpoolHelper is not available on the network."
         case .notLinked:
-            "This spool is not linked to a BambuStudio profile."
+            "This spool is not linked to a slicer profile."
         case .requestFailed:
             "Failed to communicate with SpoolHelper."
         case .activationFailed(let message):
