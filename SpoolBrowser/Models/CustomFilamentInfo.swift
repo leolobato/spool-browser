@@ -2,6 +2,7 @@ import Foundation
 
 struct CustomFilamentInfo: Sendable {
     let trayInfoIdx: String
+    let filamentId: String
     let nozzleTempMin: Int?
     let nozzleTempMax: Int?
     let trayType: String
@@ -15,6 +16,7 @@ struct CustomFilamentInfo: Sendable {
 
     init(
         trayInfoIdx: String,
+        filamentId: String? = nil,
         nozzleTempMin: Int? = nil,
         nozzleTempMax: Int? = nil,
         trayType: String = "",
@@ -27,6 +29,7 @@ struct CustomFilamentInfo: Sendable {
         printSpeedMax: Int? = nil
     ) {
         self.trayInfoIdx = trayInfoIdx
+        self.filamentId = filamentId ?? trayInfoIdx
         self.nozzleTempMin = nozzleTempMin
         self.nozzleTempMax = nozzleTempMax
         self.trayType = trayType
@@ -43,6 +46,7 @@ struct CustomFilamentInfo: Sendable {
         guard let extra = filament.extra else { return nil }
 
         let trayInfoIdx = Self.extractText(extra, key: "ams_filament_id") ?? ""
+        let filamentId = Self.extractText(extra, key: "ams_profile_filament_id") ?? trayInfoIdx
         let filamentType = Self.extractText(extra, key: "ams_filament_type")
             ?? filament.material
             ?? ""
@@ -51,6 +55,7 @@ struct CustomFilamentInfo: Sendable {
         guard !trayInfoIdx.isEmpty else { return nil }
 
         self.trayInfoIdx = trayInfoIdx
+        self.filamentId = filamentId
         self.trayType = filamentType
         if let nozzleRange = Self.extractRange(extra, key: "nozzle_temp") {
             self.nozzleTempMin = nozzleRange.0

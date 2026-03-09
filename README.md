@@ -71,6 +71,7 @@ BambuStudio profile data is stored as custom extra fields on Spoolman filaments:
 | Key | Type | Format | Example |
 |---|---|---|---|
 | `ams_filament_id` | text | JSON-quoted string | `"GFSA00"` |
+| `ams_profile_filament_id` | text | JSON-quoted string | `"GFA00"` |
 | `ams_filament_type` | text | JSON-quoted string | `"PLA"` |
 | `nozzle_temp` | integer_range | `[min, max]` | `[190, 230]` |
 | `bed_temp` | integer_range | `[min, max]` | `[55, 65]` |
@@ -90,4 +91,4 @@ This project was built almost entirely through agentic programming using [Claude
 
 ## Related
 
-[SpoolHelper](../spool-helper/) -- macOS menu bar companion app that reads BambuStudio filament profiles and exposes them over HTTP for SpoolBrowser to use.
+[bambu-spool-helper](../bambu-spool-helper/) -- FastAPI companion service that reads OrcaSlicer profiles and exposes them over HTTP for SpoolBrowser to use.

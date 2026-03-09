@@ -90,6 +90,7 @@ final class SpoolmanService {
     func linkFilament(id: Int, profile: FilamentProfile) async throws {
         let extra: [String: String] = [
             "ams_filament_id": encodeText(profile.trayInfoIdx),
+            "ams_profile_filament_id": encodeText(profile.filamentId),
             "ams_filament_type": encodeText(profile.filamentType),
             "nozzle_temp": encodeRange(profile.nozzleTempMin, profile.nozzleTempMax),
             "bed_temp": encodeRange(profile.bedTempMin, profile.bedTempMax),
@@ -109,6 +110,7 @@ final class SpoolmanService {
     ) async throws {
         let extra: [String: String] = [
             "ams_filament_id": encodeText(amsFilamentId),
+            "ams_profile_filament_id": encodeText(amsFilamentId),
             "ams_filament_type": encodeText(filamentType),
             "nozzle_temp": encodeRange(nozzleTempMin, nozzleTempMax),
         ]
@@ -118,6 +120,7 @@ final class SpoolmanService {
     func unlinkFilament(id: Int) async throws {
         let extra: [String: String] = [
             "ams_filament_id": encodeText(""),
+            "ams_profile_filament_id": encodeText(""),
             "ams_filament_type": encodeText(""),
             "nozzle_temp": "",
             "bed_temp": "",
@@ -130,6 +133,7 @@ final class SpoolmanService {
 
     static let requiredExtraFields: [(key: String, name: String, fieldType: String, unit: String?)] = [
         ("ams_filament_id", "AMS Filament ID", "text", nil),
+        ("ams_profile_filament_id", "AMS Profile Filament ID", "text", nil),
         ("ams_filament_type", "AMS Filament Type", "text", nil),
         ("nozzle_temp", "Nozzle Temperature", "integer_range", "\u{00B0}C"),
         ("bed_temp", "Bed Temperature", "integer_range", "\u{00B0}C"),

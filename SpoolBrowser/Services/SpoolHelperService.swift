@@ -96,7 +96,7 @@ final class SpoolHelperService {
 
         let body: [String: Any] = [
             "tray_info_idx": info.trayInfoIdx,
-            "filament_id": info.trayInfoIdx,
+            "filament_id": info.filamentId,
             "color_hex": spool.colorHex ?? "",
             "tray": tray,
         ]

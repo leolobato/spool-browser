@@ -63,6 +63,7 @@ BambuStudio profile data stored in Spoolman filament extra fields:
 | Key | Type | Format | Example |
 |---|---|---|---|
 | `ams_filament_id` | text | JSON-quoted string | `"GFSA00"` |
+| `ams_profile_filament_id` | text | JSON-quoted string | `"GFA00"` |
 | `ams_filament_type` | text | JSON-quoted string | `"PLA"` |
 | `nozzle_temp` | integer_range | `[min, max]` | `[190, 230]` |
 | `bed_temp` | integer_range | `[min, max]` | `[55, 65]` |
