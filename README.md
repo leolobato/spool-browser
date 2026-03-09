@@ -70,16 +70,15 @@ BambuStudio profile data is stored as custom extra fields on Spoolman filaments:
 
 | Key | Type | Format | Example |
 |---|---|---|---|
-| `bambu_filament_id` | text | JSON-quoted string | `"GFL99"` |
-| `bambu_setting_id` | text | JSON-quoted string | `"GFSA00"` |
-| `bambu_filament_type` | text | JSON-quoted string | `"PLA"` |
+| `ams_filament_id` | text | JSON-quoted string | `"GFSA00"` |
+| `ams_filament_type` | text | JSON-quoted string | `"PLA"` |
 | `nozzle_temp` | integer_range | `[min, max]` | `[190, 230]` |
 | `bed_temp` | integer_range | `[min, max]` | `[55, 65]` |
 | `drying_temperature` | integer_range | `[min, max]` | `[40, 55]` |
 | `drying_time` | integer | plain number | `8` |
 | `printing_speed` | integer_range | `[min, max]` | `[40, 100]` |
 
-Text fields are JSON-encoded -- the raw stored value for `"GFL99"` is `"\"GFL99\""`. Missing fields are created automatically via `POST /api/v1/field/filament/{key}`.
+Text fields are JSON-encoded -- the raw stored value for `"GFSA00"` is `"\"GFSA00\""`. Missing fields are created automatically via `POST /api/v1/field/filament/{key}`.
 
 ## Credits
 

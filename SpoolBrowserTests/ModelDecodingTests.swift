@@ -24,9 +24,8 @@ struct ModelDecodingTests {
                 "spool_weight": 200,
                 "color_hex": "000000",
                 "extra": {
-                    "bambu_filament_id": "\\"GFL99\\"",
-                    "bambu_setting_id": "\\"GFSA00\\"",
-                    "bambu_filament_type": "\\"PLA\\"",
+                    "ams_filament_id": "\\"GFSA00\\"",
+                    "ams_filament_type": "\\"PLA\\"",
                     "nozzle_temp": "[190, 230]"
                 }
             },
@@ -58,9 +57,8 @@ struct ModelDecodingTests {
             "id": 10,
             "name": "Test Filament",
             "extra": {
-                "bambu_filament_id": "\\"GFL99\\"",
-                "bambu_setting_id": "\\"GFSA00\\"",
-                "bambu_filament_type": "\\"PLA\\"",
+                "ams_filament_id": "\\"GFSA00\\"",
+                "ams_filament_type": "\\"PLA\\"",
                 "nozzle_temp": "[190, 230]",
                 "bed_temp": "[55, 65]",
                 "drying_temperature": "[40, 55]",
@@ -75,8 +73,7 @@ struct ModelDecodingTests {
         let info = CustomFilamentInfo(filament: filament)
 
         #expect(info != nil)
-        #expect(info?.trayInfoIdx == "GFL99")
-        #expect(info?.settingId == "GFSA00")
+        #expect(info?.trayInfoIdx == "GFSA00")
         #expect(info?.nozzleTempMin == 190)
         #expect(info?.nozzleTempMax == 230)
         #expect(info?.trayType == "PLA")
@@ -113,9 +110,8 @@ struct ModelDecodingTests {
             "id": 10,
             "name": "Minimal Fields",
             "extra": {
-                "bambu_filament_id": "\\"GFL99\\"",
-                "bambu_setting_id": "\\"GFSA00\\"",
-                "bambu_filament_type": "\\"PLA\\"",
+                "ams_filament_id": "\\"GFSA00\\"",
+                "ams_filament_type": "\\"PLA\\"",
                 "nozzle_temp": "[190, 230]"
             }
         }
@@ -126,7 +122,7 @@ struct ModelDecodingTests {
         let info = CustomFilamentInfo(filament: filament)
 
         #expect(info != nil)
-        #expect(info?.trayInfoIdx == "GFL99")
+        #expect(info?.trayInfoIdx == "GFSA00")
         #expect(info?.nozzleTempMin == 190)
         #expect(info?.bedTempMin == nil)
         #expect(info?.dryingTime == nil)
@@ -140,8 +136,7 @@ struct ModelDecodingTests {
             "name": "Legacy Link",
             "material": "PLA",
             "extra": {
-                "bambu_filament_id": "\\"GFL99\\"",
-                "bambu_setting_id": "\\"GFSA00\\""
+                "ams_filament_id": "\\"GFSA00\\""
             }
         }
         """
@@ -151,21 +146,20 @@ struct ModelDecodingTests {
         let info = CustomFilamentInfo(filament: filament)
 
         #expect(info != nil)
-        #expect(info?.trayInfoIdx == "GFL99")
-        #expect(info?.settingId == "GFSA00")
+        #expect(info?.trayInfoIdx == "GFSA00")
         #expect(info?.trayType == "PLA")
         #expect(info?.nozzleTempMin == nil)
         #expect(info?.nozzleTempMax == nil)
     }
 
-    @Test("CustomFilamentInfo is linked when only setting ID exists")
-    func customInfoLinkedWithSettingOnly() throws {
+    @Test("CustomFilamentInfo is linked when only AMS Filament ID exists")
+    func customInfoLinkedWithAmsFilamentIdOnly() throws {
         let json = """
         {
             "id": 10,
-            "name": "Setting-Only Link",
+            "name": "AMS Filament-Only Link",
             "extra": {
-                "bambu_setting_id": "\\"GFSA00\\""
+                "ams_filament_id": "\\"GFSA00\\""
             }
         }
         """
@@ -175,8 +169,7 @@ struct ModelDecodingTests {
         let info = CustomFilamentInfo(filament: filament)
 
         #expect(info != nil)
-        #expect(info?.trayInfoIdx == "")
-        #expect(info?.settingId == "GFSA00")
+        #expect(info?.trayInfoIdx == "GFSA00")
     }
 
     @Test("DeepLinkHandler parses spool URL")

@@ -25,7 +25,7 @@ xcodebuild test -scheme SpoolBrowser -destination 'platform=iOS Simulator,name=i
 
 MVVM with `@Observable` services (iOS 17+ Observation framework). All services are `@MainActor`-isolated.
 
-- **Models/** — `Codable`, `Sendable` structs: `Spool`, `Filament`, `Vendor`, `BambuProfile`, `CustomFilamentInfo`
+- **Models/** — `Codable`, `Sendable` structs: `Spool`, `Filament`, `Vendor`, `FilamentProfile`, `CustomFilamentInfo`
 - **Services/** — `SpoolmanService` (REST client), `SpoolHelperService` (Bonjour + HTTP), `LabelPrinterService` (CoreBluetooth/BLE)
 - **Views/** — SwiftUI views rooted at `ContentView` (TabView with Spools, Scan, Settings tabs)
 - **Utilities/** — `LabelRenderer` (label image + rasterization), `DeepLinkHandler`, `NFCWriter`, `NFCReader`, `Color+Hex`
@@ -62,16 +62,15 @@ BambuStudio profile data stored in Spoolman filament extra fields:
 
 | Key | Type | Format | Example |
 |---|---|---|---|
-| `bambu_filament_id` | text | JSON-quoted string | `"GFL99"` |
-| `bambu_setting_id` | text | JSON-quoted string | `"GFSA00"` |
-| `bambu_filament_type` | text | JSON-quoted string | `"PLA"` |
+| `ams_filament_id` | text | JSON-quoted string | `"GFSA00"` |
+| `ams_filament_type` | text | JSON-quoted string | `"PLA"` |
 | `nozzle_temp` | integer_range | `[min, max]` | `[190, 230]` |
 | `bed_temp` | integer_range | `[min, max]` | `[55, 65]` |
 | `drying_temperature` | integer_range | `[min, max]` | `[40, 55]` |
 | `drying_time` | integer | plain number | `8` |
 | `printing_speed` | integer_range | `[min, max]` | `[40, 100]` |
 
-- Text fields are JSON-encoded: the raw stored value for `"GFL99"` is `"\"GFL99\""`.
+- Text fields are JSON-encoded: the raw stored value for `"GFSA00"` is `"\"GFSA00\""`.
 - `CustomFilamentInfo` reads these fields; `SpoolmanService.linkFilament` writes them.
 - `SpoolmanService.ensureExtraFields()` creates missing fields via `POST /api/v1/field/filament/{key}`.
 

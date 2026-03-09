@@ -95,7 +95,7 @@ final class SpoolHelperService {
         }
 
         let body: [String: Any] = [
-            "setting_id": info.settingId,
+            "tray_info_idx": info.trayInfoIdx,
             "filament_id": info.trayInfoIdx,
             "color_hex": spool.colorHex ?? "",
             "tray": tray,
@@ -127,7 +127,7 @@ final class SpoolHelperService {
         }
     }
 
-    func fetchProfiles(search: String = "") async throws -> [BambuProfile] {
+    func fetchProfiles(search: String = "") async throws -> [FilamentProfile] {
         let base = effectiveAddress
         var urlString = "\(base)/profiles"
         let trimmedSearch = search.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -143,7 +143,7 @@ final class SpoolHelperService {
         request.timeoutInterval = 10
 
         let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode([BambuProfile].self, from: data)
+        return try JSONDecoder().decode([FilamentProfile].self, from: data)
     }
 
     func testConnection() async throws -> String {

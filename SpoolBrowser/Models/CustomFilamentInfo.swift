@@ -2,7 +2,6 @@ import Foundation
 
 struct CustomFilamentInfo: Sendable {
     let trayInfoIdx: String
-    let settingId: String
     let nozzleTempMin: Int?
     let nozzleTempMax: Int?
     let trayType: String
@@ -16,7 +15,6 @@ struct CustomFilamentInfo: Sendable {
 
     init(
         trayInfoIdx: String,
-        settingId: String,
         nozzleTempMin: Int? = nil,
         nozzleTempMax: Int? = nil,
         trayType: String = "",
@@ -29,7 +27,6 @@ struct CustomFilamentInfo: Sendable {
         printSpeedMax: Int? = nil
     ) {
         self.trayInfoIdx = trayInfoIdx
-        self.settingId = settingId
         self.nozzleTempMin = nozzleTempMin
         self.nozzleTempMax = nozzleTempMax
         self.trayType = trayType
@@ -45,17 +42,15 @@ struct CustomFilamentInfo: Sendable {
     init?(filament: Filament) {
         guard let extra = filament.extra else { return nil }
 
-        let filamentId = Self.extractText(extra, key: "bambu_filament_id") ?? ""
-        let settingId = Self.extractText(extra, key: "bambu_setting_id") ?? ""
-        let filamentType = Self.extractText(extra, key: "bambu_filament_type")
+        let trayInfoIdx = Self.extractText(extra, key: "ams_filament_id") ?? ""
+        let filamentType = Self.extractText(extra, key: "ams_filament_type")
             ?? filament.material
             ?? ""
 
         // Keep linked-state semantics aligned with spool-helper.
-        guard !filamentId.isEmpty || !settingId.isEmpty else { return nil }
+        guard !trayInfoIdx.isEmpty else { return nil }
 
-        self.trayInfoIdx = filamentId
-        self.settingId = settingId
+        self.trayInfoIdx = trayInfoIdx
         self.trayType = filamentType
         if let nozzleRange = Self.extractRange(extra, key: "nozzle_temp") {
             self.nozzleTempMin = nozzleRange.0

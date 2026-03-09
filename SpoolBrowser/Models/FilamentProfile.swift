@@ -1,9 +1,9 @@
 import Foundation
 
-struct BambuProfile: Codable, Identifiable, Hashable, Sendable {
+struct FilamentProfile: Codable, Identifiable, Hashable, Sendable {
     let name: String
     let filamentId: String
-    let settingId: String
+    let trayInfoIdx: String
     let filamentType: String
     let nozzleTempMin: Int
     let nozzleTempMax: Int
@@ -16,12 +16,12 @@ struct BambuProfile: Codable, Identifiable, Hashable, Sendable {
     let printSpeedMax: Int
     let source: String
 
-    var id: String { "\(filamentId)-\(settingId)" }
+    var id: String { "\(filamentId)-\(trayInfoIdx)" }
 
     enum CodingKeys: String, CodingKey {
         case name, source
         case filamentId = "filament_id"
-        case settingId = "setting_id"
+        case trayInfoIdx = "tray_info_idx"
         case filamentType = "filament_type"
         case nozzleTempMin = "nozzle_temp_min"
         case nozzleTempMax = "nozzle_temp_max"

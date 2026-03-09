@@ -8,7 +8,7 @@ struct ProfilePickerSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var showManualEntry = false
-    @State private var profiles: [BambuProfile] = []
+    @State private var profiles: [FilamentProfile] = []
     @State private var searchText = ""
     @State private var isLoading = false
     @State private var loadError: String?
@@ -16,8 +16,7 @@ struct ProfilePickerSheet: View {
     @State private var linkError: String?
 
     // Manual entry fields
-    @State private var manualFilamentId = ""
-    @State private var manualSettingId = ""
+    @State private var manualAmsFilamentId = ""
     @State private var manualFilamentType = "PLA"
     @State private var manualTempMin = ""
     @State private var manualTempMax = ""
@@ -111,7 +110,7 @@ struct ProfilePickerSheet: View {
         }
     }
 
-    private func profileRow(_ profile: BambuProfile) -> some View {
+    private func profileRow(_ profile: FilamentProfile) -> some View {
         Button {
             linkProfile(profile)
         } label: {
@@ -121,6 +120,7 @@ struct ProfilePickerSheet: View {
                     .foregroundStyle(.primary)
                 HStack(spacing: 12) {
                     Text(profile.filamentType)
+                    Text(profile.trayInfoIdx)
                     Text("Nozzle \(profile.nozzleTempMin)-\(profile.nozzleTempMax)\u{00B0}C")
                     if profile.bedTempMin > 0 {
                         Text("Bed \(profile.bedTempMin)-\(profile.bedTempMax)\u{00B0}C")
@@ -139,10 +139,7 @@ struct ProfilePickerSheet: View {
     private var manualEntryForm: some View {
         Form {
             Section("Profile Fields") {
-                TextField("Filament ID", text: $manualFilamentId)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                TextField("Setting ID", text: $manualSettingId)
+                TextField("AMS Filament ID", text: $manualAmsFilamentId)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                 TextField("Filament Type (e.g. PLA)", text: $manualFilamentType)
@@ -174,8 +171,7 @@ struct ProfilePickerSheet: View {
     }
 
     private var manualEntryValid: Bool {
-        !manualFilamentId.isEmpty
-        && !manualSettingId.isEmpty
+        !manualAmsFilamentId.isEmpty
         && !manualFilamentType.isEmpty
         && Int(manualTempMin) != nil
         && Int(manualTempMax) != nil
@@ -194,7 +190,7 @@ struct ProfilePickerSheet: View {
         isLoading = false
     }
 
-    private func linkProfile(_ profile: BambuProfile) {
+    private func linkProfile(_ profile: FilamentProfile) {
         isLinking = true
         Task {
             do {
@@ -218,8 +214,7 @@ struct ProfilePickerSheet: View {
                 try await spoolmanService.ensureExtraFields()
                 try await spoolmanService.linkFilamentManual(
                     id: filamentId,
-                    filamentId: manualFilamentId,
-                    settingId: manualSettingId,
+                    amsFilamentId: manualAmsFilamentId,
                     nozzleTempMin: tempMin,
                     nozzleTempMax: tempMax,
                     filamentType: manualFilamentType
