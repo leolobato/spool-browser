@@ -58,7 +58,6 @@ struct ModelDecodingTests {
             "name": "Test Filament",
             "extra": {
                 "ams_filament_id": "\\"GFSA00\\"",
-                "ams_profile_filament_id": "\\"GFA00\\"",
                 "ams_filament_type": "\\"PLA\\"",
                 "nozzle_temp": "[190, 230]",
                 "bed_temp": "[55, 65]",
@@ -74,8 +73,7 @@ struct ModelDecodingTests {
         let info = CustomFilamentInfo(filament: filament)
 
         #expect(info != nil)
-        #expect(info?.trayInfoIdx == "GFSA00")
-        #expect(info?.filamentId == "GFA00")
+        #expect(info?.amsFilamentId == "GFSA00")
         #expect(info?.nozzleTempMin == 190)
         #expect(info?.nozzleTempMax == 230)
         #expect(info?.trayType == "PLA")
@@ -124,8 +122,7 @@ struct ModelDecodingTests {
         let info = CustomFilamentInfo(filament: filament)
 
         #expect(info != nil)
-        #expect(info?.trayInfoIdx == "GFSA00")
-        #expect(info?.filamentId == "GFSA00")
+        #expect(info?.amsFilamentId == "GFSA00")
         #expect(info?.nozzleTempMin == 190)
         #expect(info?.bedTempMin == nil)
         #expect(info?.dryingTime == nil)
@@ -149,8 +146,7 @@ struct ModelDecodingTests {
         let info = CustomFilamentInfo(filament: filament)
 
         #expect(info != nil)
-        #expect(info?.trayInfoIdx == "GFSA00")
-        #expect(info?.filamentId == "GFSA00")
+        #expect(info?.amsFilamentId == "GFSA00")
         #expect(info?.trayType == "PLA")
         #expect(info?.nozzleTempMin == nil)
         #expect(info?.nozzleTempMax == nil)
@@ -173,8 +169,7 @@ struct ModelDecodingTests {
         let info = CustomFilamentInfo(filament: filament)
 
         #expect(info != nil)
-        #expect(info?.trayInfoIdx == "GFSA00")
-        #expect(info?.filamentId == "GFSA00")
+        #expect(info?.amsFilamentId == "GFSA00")
     }
 
     @Test("DeepLinkHandler parses spool URL")

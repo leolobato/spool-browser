@@ -94,12 +94,21 @@ final class SpoolHelperService {
             throw SpoolHelperError.notAvailable
         }
 
-        let body: [String: Any] = [
-            "tray_info_idx": info.trayInfoIdx,
-            "filament_id": info.filamentId,
+        var body: [String: Any] = [
+            "filament_id": info.amsFilamentId,
+            "filament_type": info.trayType,
             "color_hex": spool.colorHex ?? "",
             "tray": tray,
         ]
+        if let nozzleTempMin = info.nozzleTempMin {
+            body["nozzle_temp_min"] = nozzleTempMin
+        }
+        if let nozzleTempMax = info.nozzleTempMax {
+            body["nozzle_temp_max"] = nozzleTempMax
+        }
+        if let bedTempMin = info.bedTempMin {
+            body["bed_temp"] = bedTempMin
+        }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

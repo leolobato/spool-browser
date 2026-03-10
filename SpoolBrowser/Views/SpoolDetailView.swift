@@ -100,7 +100,7 @@ struct SpoolDetailView: View {
             // Slicer Link Status
             Section("Slicer Profile") {
                 if let info = spool.customInfo {
-                    LabeledContent("AMS Filament ID", value: displayValue(info.trayInfoIdx))
+                    LabeledContent("AMS Filament ID", value: displayValue(info.amsFilamentId))
                     LabeledContent("Type", value: displayValue(info.trayType))
 
                     Button {

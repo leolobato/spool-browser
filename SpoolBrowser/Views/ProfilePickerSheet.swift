@@ -120,7 +120,7 @@ struct ProfilePickerSheet: View {
                     .foregroundStyle(.primary)
                 HStack(spacing: 12) {
                     Text(profile.filamentType)
-                    Text(profile.trayInfoIdx)
+                    Text(profile.filamentId)
                     Text("Nozzle \(profile.nozzleTempMin)-\(profile.nozzleTempMax)\u{00B0}C")
                     if profile.bedTempMin > 0 {
                         Text("Bed \(profile.bedTempMin)-\(profile.bedTempMax)\u{00B0}C")

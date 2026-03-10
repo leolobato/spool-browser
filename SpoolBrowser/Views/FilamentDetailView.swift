@@ -48,7 +48,7 @@ struct FilamentDetailView: View {
 
             if let info = CustomFilamentInfo(filament: filament) {
                 Section("Slicer Profile") {
-                    LabeledContent("AMS Filament ID", value: displayValue(info.trayInfoIdx))
+                    LabeledContent("AMS Filament ID", value: displayValue(info.amsFilamentId))
                     LabeledContent("Type", value: displayValue(info.trayType))
                     if let min = info.nozzleTempMin, let max = info.nozzleTempMax {
                         LabeledContent("Nozzle Temp", value: "\(min)-\(max)\u{00B0}C")

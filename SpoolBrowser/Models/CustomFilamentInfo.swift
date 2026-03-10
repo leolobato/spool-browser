@@ -1,8 +1,7 @@
 import Foundation
 
 struct CustomFilamentInfo: Sendable {
-    let trayInfoIdx: String
-    let filamentId: String
+    let amsFilamentId: String
     let nozzleTempMin: Int?
     let nozzleTempMax: Int?
     let trayType: String
@@ -15,8 +14,7 @@ struct CustomFilamentInfo: Sendable {
     let printSpeedMax: Int?
 
     init(
-        trayInfoIdx: String,
-        filamentId: String? = nil,
+        amsFilamentId: String,
         nozzleTempMin: Int? = nil,
         nozzleTempMax: Int? = nil,
         trayType: String = "",
@@ -28,8 +26,7 @@ struct CustomFilamentInfo: Sendable {
         printSpeedMin: Int? = nil,
         printSpeedMax: Int? = nil
     ) {
-        self.trayInfoIdx = trayInfoIdx
-        self.filamentId = filamentId ?? trayInfoIdx
+        self.amsFilamentId = amsFilamentId
         self.nozzleTempMin = nozzleTempMin
         self.nozzleTempMax = nozzleTempMax
         self.trayType = trayType
@@ -45,17 +42,15 @@ struct CustomFilamentInfo: Sendable {
     init?(filament: Filament) {
         guard let extra = filament.extra else { return nil }
 
-        let trayInfoIdx = Self.extractText(extra, key: "ams_filament_id") ?? ""
-        let filamentId = Self.extractText(extra, key: "ams_profile_filament_id") ?? trayInfoIdx
+        let amsFilamentId = Self.extractText(extra, key: "ams_filament_id") ?? ""
         let filamentType = Self.extractText(extra, key: "ams_filament_type")
             ?? filament.material
             ?? ""
 
         // Keep linked-state semantics aligned with spool-helper.
-        guard !trayInfoIdx.isEmpty else { return nil }
+        guard !amsFilamentId.isEmpty else { return nil }
 
-        self.trayInfoIdx = trayInfoIdx
-        self.filamentId = filamentId
+        self.amsFilamentId = amsFilamentId
         self.trayType = filamentType
         if let nozzleRange = Self.extractRange(extra, key: "nozzle_temp") {
             self.nozzleTempMin = nozzleRange.0
@@ -90,6 +85,29 @@ struct CustomFilamentInfo: Sendable {
             self.printSpeedMin = nil
             self.printSpeedMax = nil
         }
+    }
+
+    // MARK: - Tray Type Validation
+
+    /// Valid tray_type values accepted by the Bambu Lab AMS ams_filament_setting MQTT command.
+    /// Sourced from BambuStudio PrintConfig.cpp filament_type enum plus firmware support aliases.
+    static let validTrayTypes: Set<String> = [
+        "PLA", "ABS", "ASA", "ASA-CF", "PETG", "PCTG",
+        "TPU", "TPU-AMS", "PC",
+        "PA", "PA-CF", "PA-GF", "PA6-CF",
+        "PLA-CF", "PET-CF", "PETG-CF",
+        "PVA", "HIPS",
+        "PLA-AERO", "PPS", "PPS-CF",
+        "PPA-CF", "PPA-GF", "ABS-GF", "ASA-AERO",
+        "PE", "PP", "EVA", "PHA", "BVOH",
+        "PE-CF", "PP-CF", "PP-GF",
+        // Firmware support-material aliases
+        "PLA-S", "PA-S", "ABS-S",
+    ]
+
+    /// Whether `trayType` is a value the AMS firmware accepts.
+    var hasValidTrayType: Bool {
+        Self.validTrayTypes.contains(trayType.uppercased())
     }
 
     // MARK: - Field Parsing
