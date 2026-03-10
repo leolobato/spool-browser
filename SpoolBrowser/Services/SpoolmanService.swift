@@ -116,16 +116,7 @@ final class SpoolmanService {
     }
 
     func unlinkFilament(id: Int) async throws {
-        let extra: [String: Any] = [
-            "ams_filament_id": NSNull(),
-            "ams_filament_type": NSNull(),
-            "nozzle_temp": NSNull(),
-            "bed_temp": NSNull(),
-            "drying_temperature": NSNull(),
-            "drying_time": NSNull(),
-            "printing_speed": NSNull(),
-        ]
-        try await patchFilamentExtra(id: id, extra: extra)
+        try await patchFilamentExtra(id: id, extra: [:])
     }
 
     static let requiredExtraFields: [(key: String, name: String, fieldType: String, unit: String?)] = [
@@ -195,7 +186,7 @@ final class SpoolmanService {
 
     /// PATCHes extra fields on a filament. Values must be pre-formatted
     /// in Spoolman's expected format (JSON-encoded text, integer_range, or integer).
-    private func patchFilamentExtra(id: Int, extra: [String: Any]) async throws {
+    private func patchFilamentExtra(id: Int, extra: [String: String]) async throws {
         guard let baseURL else { throw SpoolmanError.notConfigured }
         let url = baseURL.appendingPathComponent("/api/v1/filament/\(id)")
         var request = URLRequest(url: url)

@@ -117,9 +117,8 @@ struct CustomFilamentInfo: Sendable {
         guard let value = extra[key], !value.isEmpty else { return nil }
         if value.hasPrefix("\"") && value.hasSuffix("\""),
            let data = value.data(using: .utf8),
-           let decoded = try? JSONDecoder().decode(String.self, from: data),
-           !decoded.isEmpty {
-            return decoded
+           let decoded = try? JSONDecoder().decode(String.self, from: data) {
+            return decoded.isEmpty ? nil : decoded
         }
         return value
     }
