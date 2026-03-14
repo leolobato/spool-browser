@@ -8,7 +8,6 @@ iOS app for browsing [Spoolman](https://github.com/Donkie/Spoolman) filament spo
 - Link Bambu Lab filament profiles to Spoolman filaments via [bambu-spool-helper](https://github.com/leolobato/bambu-spool-helper)
 - Activate filament profiles on a Bambu printer's AMS via bambu-spool-helper (MQTT)
 - Print physical spool labels on a Phomemo M110 thermal label printer via Bluetooth
-- Write spool URLs to NFC tags and scan them to jump to spool details
 - Scan QR codes to look up spools
 - Deep link support for `spoolbrowser://` and `spoolman://` URL schemes
 
@@ -18,9 +17,9 @@ iOS app for browsing [Spoolman](https://github.com/Donkie/Spoolman) filament spo
   <img src="screenshots/label-preview.png" width="250" alt="Label preview">
 </p>
 
-## Branches
+## Branch
 
-The `no-rfid` branch removes all NFC tag reading/writing features. Use this branch if you don't have a paid Apple Developer Program membership, since the NFC entitlement requires one.
+This is the `no-rfid` branch, which removes all NFC tag reading/writing features so the app can be built without a paid Apple Developer Program membership. See the `main` branch for the full-featured version.
 
 ## Requirements
 

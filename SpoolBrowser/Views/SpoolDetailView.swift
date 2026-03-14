@@ -6,10 +6,6 @@ struct SpoolDetailView: View {
     var labelPrinterService: LabelPrinterService
 
     @State private var spool: Spool
-    @State private var nfcWriter = NFCWriter()
-    @State private var showNFCAlert = false
-    @State private var nfcAlertTitle = ""
-    @State private var nfcAlertMessage = ""
     @State private var showTrayPicker = false
     @State private var showHelperAlert = false
     @State private var helperAlertTitle = ""
@@ -140,18 +136,7 @@ struct SpoolDetailView: View {
                 } label: {
                     Label("Print Label", systemImage: "printer")
                 }
-
-                Button {
-                    writeNFCTag()
-                } label: {
-                    Label("Write NFC Tag", systemImage: "wave.3.right")
-                }
             }
-        }
-        .alert(nfcAlertTitle, isPresented: $showNFCAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(nfcAlertMessage)
         }
         .alert(helperAlertTitle, isPresented: $showHelperAlert) {
             Button("OK", role: .cancel) {}
@@ -237,25 +222,4 @@ struct SpoolDetailView: View {
         }
     }
 
-    private func writeNFCTag() {
-        guard let url = URL(string: "spoolbrowser://spool/\(spool.id)") else { return }
-        nfcWriter.write(url: url) { result in
-            MainActor.assumeIsolated {
-                switch result {
-                case .success:
-                    nfcAlertTitle = "Success"
-                    nfcAlertMessage = "Spool URL written to NFC tag."
-                    showNFCAlert = true
-                case .failure(let error):
-                    if let nfcError = error as? NFCWriter.NFCWriteError,
-                       case .sessionInvalidated = nfcError {
-                        return
-                    }
-                    nfcAlertTitle = "Error"
-                    nfcAlertMessage = error.localizedDescription
-                    showNFCAlert = true
-                }
-            }
-        }
-    }
 }

@@ -40,14 +40,14 @@ MVVM with `@Observable` services (iOS 17+ Observation framework). All services a
 - **Models/** — `Codable`, `Sendable` structs: `Spool`, `Filament`, `Vendor`, `FilamentProfile`, `CustomFilamentInfo`
 - **Services/** — `SpoolmanService` (REST client), `SpoolHelperService` (HTTP), `LabelPrinterService` (CoreBluetooth/BLE)
 - **Views/** — SwiftUI views rooted at `ContentView` (TabView with Spools, Scan, Settings tabs)
-- **Utilities/** — `LabelRenderer` (label image + rasterization), `DeepLinkHandler`, `NFCWriter`, `NFCReader`, `Color+Hex`
+- **Utilities/** — `LabelRenderer` (label image + rasterization), `DeepLinkHandler`, `Color+Hex`
 - **Resources/Logos/** — ~340 vendor logo PNGs, included as a folder reference in `project.yml`. Looked up via `UIImage(named: "Logos/\(slug)")`.
 
 Settings are stored via `@AppStorage`/UserDefaults.
 
 **URL Schemes**: `spoolbrowser://` and `spoolman://` — handled by `DeepLinkHandler`, supports `spool/{id}` and `filament/{id}` paths.
 
-**Branch note**: The `no-rfid` branch removes NFC entitlements for building with free developer accounts.
+**Branch note**: This is the `no-rfid` branch — NFC features are removed so the app builds without a paid Apple Developer Program membership. See `main` for the full-featured version.
 
 ## Key Services
 
