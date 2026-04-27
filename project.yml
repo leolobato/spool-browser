@@ -39,8 +39,6 @@ targets:
         NSCameraUsageDescription: Camera access is needed to scan QR codes on filament spools
         NFCReaderUsageDescription: NFC access is needed to write spool URLs to NFC tags
         NSLocalNetworkUsageDescription: Local network access is needed to communicate with bambu-spool-helper on your network
-        NSBonjourServices:
-          - _spoolhelper._tcp
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
         CFBundleURLTypes:

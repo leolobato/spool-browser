@@ -1,87 +1,25 @@
 import Foundation
-import Network
 
 @Observable
 @MainActor
 final class SpoolHelperService {
-    private(set) var isDiscovered = false
-    private(set) var discoveredName: String?
-
     var manualAddress: String = "" {
         didSet { UserDefaults.standard.set(manualAddress, forKey: "spoolHelperAddress") }
     }
 
     var isAvailable: Bool {
-        isDiscovered || !effectiveAddress.isEmpty
+        !effectiveAddress.isEmpty
     }
 
-    private var browser: NWBrowser?
-    private var resolvedHost: String?
-    private var resolvedPort: UInt16?
-    private var resolveConnection: NWConnection?
-
     private var effectiveAddress: String {
-        if let host = resolvedHost, let port = resolvedPort {
-            return "http://\(host):\(port)"
-        }
         let trimmed = manualAddress.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmed.isEmpty {
-            if trimmed.hasPrefix("http") { return trimmed }
-            return "http://\(trimmed)"
-        }
-        return ""
+        if trimmed.isEmpty { return "" }
+        if trimmed.hasPrefix("http") { return trimmed }
+        return "http://\(trimmed)"
     }
 
     init() {
         manualAddress = UserDefaults.standard.string(forKey: "spoolHelperAddress") ?? ""
-    }
-
-    func startBrowsing() {
-        let params = NWParameters()
-        params.includePeerToPeer = true
-        let browser = NWBrowser(for: .bonjour(type: "_spoolhelper._tcp", domain: nil), using: params)
-
-        browser.browseResultsChangedHandler = { [weak self] results, _ in
-            Task { @MainActor in
-                guard let self else { return }
-                if let result = results.first {
-                    if case .service(let name, _, _, _) = result.endpoint {
-                        self.discoveredName = name
-                    }
-                    self.isDiscovered = true
-                    self.resolveEndpoint(result.endpoint)
-                } else {
-                    self.isDiscovered = false
-                    self.discoveredName = nil
-                    self.resolvedHost = nil
-                    self.resolvedPort = nil
-                    self.resolveConnection?.cancel()
-                    self.resolveConnection = nil
-                }
-            }
-        }
-
-        browser.stateUpdateHandler = { [weak self] state in
-            if case .failed = state {
-                Task { @MainActor in
-                    self?.isDiscovered = false
-                }
-            }
-        }
-
-        self.browser = browser
-        browser.start(queue: .main)
-    }
-
-    func stopBrowsing() {
-        browser?.cancel()
-        browser = nil
-        resolveConnection?.cancel()
-        resolveConnection = nil
-        isDiscovered = false
-        discoveredName = nil
-        resolvedHost = nil
-        resolvedPort = nil
     }
 
     func activate(spool: Spool, tray: Int) async throws -> ActivationResult {
@@ -171,47 +109,6 @@ final class SpoolHelperService {
             throw SpoolHelperError.requestFailed
         }
         return "\(profileCount) profiles loaded"
-    }
-
-    // MARK: - Endpoint resolution
-
-    private func resolveEndpoint(_ endpoint: NWEndpoint) {
-        resolveConnection?.cancel()
-        let connection = NWConnection(to: endpoint, using: .tcp)
-        resolveConnection = connection
-
-        connection.stateUpdateHandler = { [weak self] state in
-            switch state {
-            case .ready:
-                if let innerEndpoint = connection.currentPath?.remoteEndpoint,
-                   case let .hostPort(host, port) = innerEndpoint {
-                    let hostString: String
-                    switch host {
-                    case .ipv4:
-                        hostString = "\(host)"
-                    case .ipv6:
-                        hostString = "[\(host)]"
-                    case .name(let name, _):
-                        hostString = name
-                    @unknown default:
-                        hostString = "\(host)"
-                    }
-                    Task { @MainActor in
-                        self?.resolvedHost = hostString
-                        self?.resolvedPort = port.rawValue
-                    }
-                }
-                connection.cancel()
-            case .failed:
-                connection.cancel()
-                Task { @MainActor in
-                    self?.resolveConnection = nil
-                }
-            default:
-                break
-            }
-        }
-        connection.start(queue: .main)
     }
 }
 

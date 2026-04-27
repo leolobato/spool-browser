@@ -39,10 +39,6 @@
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Bluetooth is needed to connect to a label printer</string>
-	<key>NSBonjourServices</key>
-	<array>
-		<string>_spoolhelper._tcp</string>
-	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera access is needed to scan QR codes on filament spools</string>
 	<key>NSLocalNetworkUsageDescription</key>

@@ -24,7 +24,6 @@ struct SpoolBrowserApp: App {
                     spoolmanService.configure(baseURL: spoolmanURL)
                     await spoolmanService.checkConnection()
                 }
-                spoolHelperService.startBrowsing()
             }
             .onOpenURL { url in
                 handleDeepLink(url)

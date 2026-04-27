@@ -80,12 +80,12 @@ struct SettingsView: View {
                     HStack {
                         Text("Status")
                         Spacer()
-                        if spoolHelperService.isDiscovered {
-                            Label(spoolHelperService.discoveredName ?? "Found", systemImage: "checkmark.circle.fill")
+                        if spoolHelperService.isAvailable {
+                            Label("Configured", systemImage: "checkmark.circle.fill")
                                 .foregroundStyle(.green)
                                 .font(.subheadline)
                         } else {
-                            Label("Not found", systemImage: "magnifyingglass")
+                            Label("Not configured", systemImage: "circle")
                                 .foregroundStyle(.secondary)
                                 .font(.subheadline)
                         }
@@ -109,7 +109,7 @@ struct SettingsView: View {
                 } header: {
                     Text("bambu-spool-helper")
                 } footer: {
-                    Text("Auto-discovered via Bonjour, or enter the address manually.")
+                    Text("Enter the address of bambu-spool-helper running on your network.")
                 }
 
                 Section {
