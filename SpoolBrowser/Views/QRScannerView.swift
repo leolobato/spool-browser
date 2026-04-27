@@ -12,6 +12,8 @@ struct QRScannerView: View {
     @State private var isLoading = false
     @State private var scannerResetID = UUID()
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
@@ -56,6 +58,11 @@ struct QRScannerView: View {
             }
             .onChange(of: selectedTab) { _, newValue in
                 if newValue == .scan && !isLoading {
+                    scannerResetID = UUID()
+                }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active && selectedTab == .scan && !isLoading {
                     scannerResetID = UUID()
                 }
             }
