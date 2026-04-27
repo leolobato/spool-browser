@@ -29,6 +29,10 @@ xcodebuild test -scheme SpoolBrowser -destination 'platform=iOS Simulator,name=i
 
 **Targets**: iOS 18.0, iPhone only, Swift 6.0 with strict concurrency.
 
+**xcconfig layering**: `Base.xcconfig` defines defaults (`APP_BUNDLE_ID=com.example.SpoolBrowser`, empty `DEVELOPMENT_TEAM`) and ends with `#include? "Local.xcconfig"` so a developer's gitignored `Local.xcconfig` overrides them. Both `PRODUCT_BUNDLE_IDENTIFIER` and the `CFBundleURLName` resolve from `$(APP_BUNDLE_ID)`.
+
+**`AGENTS.md` is a symlink to `CLAUDE.md`** — edit `CLAUDE.md` and both stay in sync. Don't replace the symlink with a separate file.
+
 ## Architecture
 
 MVVM with `@Observable` services (iOS 17+ Observation framework). All services are `@MainActor`-isolated.
@@ -47,9 +51,9 @@ Settings are stored via `@AppStorage`/UserDefaults.
 
 ## Key Services
 
-**SpoolmanService** — REST client for Spoolman API. Fetches spools/filaments, links filaments to BambuStudio profiles, manages extra field creation via `ensureExtraFields()`.
+**SpoolmanService** — REST client for Spoolman API. Fetches spools/filaments, links filaments to Bambu Lab filament profiles, manages extra field creation via `ensureExtraFields()`.
 
-**SpoolHelperService** — Discovers the companion macOS app (`spool-helper/` sibling directory) via Bonjour (`_spoolhelper._tcp`), with manual address fallback. HTTP API for fetching BambuStudio profiles and activating them with tray assignment.
+**SpoolHelperService** — Discovers the [bambu-spool-helper](https://github.com/leolobato/bambu-spool-helper) companion service (FastAPI) via Bonjour (`_spoolhelper._tcp`), with manual address fallback. HTTP API for fetching Bambu Lab filament profiles (the helper sources them from `orcaslicer-cli`) and activating them on the printer's AMS via MQTT, with tray assignment (0–3 = AMS slots, 4 = external spool). The activation does NOT go through BambuStudio — bambu-spool-helper talks to the printer directly. The Swift type retains the `SpoolHelper` name for historical reasons; the network identifier (`_spoolhelper._tcp`) must match what the helper advertises.
 
 **LabelPrinterService** — CoreBluetooth BLE wrapper for Phomemo thermal label printers. Scans by known name prefixes (`M02`, `Q1`, `T0`, etc. — M110S variants advertise as `Q199...` not `M110`) and by advertised service UUIDs (`FF00`, `FFE0`, `AE30`). Write characteristic `FF02`, notify `FF03`. ESC/POS raster protocol with 128-byte chunks.
 
@@ -70,7 +74,7 @@ Settings are stored via `@AppStorage`/UserDefaults.
 
 ## Spoolman Extra Fields
 
-BambuStudio profile data stored in Spoolman filament extra fields:
+Bambu Lab filament profile data (sourced from OrcaSlicer via bambu-spool-helper) stored in Spoolman filament extra fields:
 
 | Key | Type | Format | Example |
 |---|---|---|---|
@@ -78,9 +82,6 @@ BambuStudio profile data stored in Spoolman filament extra fields:
 | `ams_filament_type` | text | JSON-quoted string | `"PLA"` |
 | `nozzle_temp` | integer_range | `[min, max]` | `[190, 230]` |
 | `bed_temp` | integer_range | `[min, max]` | `[55, 65]` |
-| `drying_temperature` | integer_range | `[min, max]` | `[40, 55]` |
-| `drying_time` | integer | plain number | `8` |
-| `printing_speed` | integer_range | `[min, max]` | `[40, 100]` |
 
 - Text fields are JSON-encoded: the raw stored value for `"GFSA00"` is `"\"GFSA00\""`.
 - `CustomFilamentInfo` reads these fields; `SpoolmanService.linkFilament` writes them.

@@ -60,10 +60,7 @@ struct ModelDecodingTests {
                 "ams_filament_id": "\\"GFSA00\\"",
                 "ams_filament_type": "\\"PLA\\"",
                 "nozzle_temp": "[190, 230]",
-                "bed_temp": "[55, 65]",
-                "drying_temperature": "[40, 55]",
-                "drying_time": "8",
-                "printing_speed": "[40, 100]"
+                "bed_temp": "[55, 65]"
             }
         }
         """
@@ -79,11 +76,6 @@ struct ModelDecodingTests {
         #expect(info?.trayType == "PLA")
         #expect(info?.bedTempMin == 55)
         #expect(info?.bedTempMax == 65)
-        #expect(info?.dryingTempMin == 40)
-        #expect(info?.dryingTempMax == 55)
-        #expect(info?.dryingTime == 8)
-        #expect(info?.printSpeedMin == 40)
-        #expect(info?.printSpeedMax == 100)
     }
 
     @Test("CustomFilamentInfo returns nil when not linked")
@@ -125,7 +117,6 @@ struct ModelDecodingTests {
         #expect(info?.amsFilamentId == "GFSA00")
         #expect(info?.nozzleTempMin == 190)
         #expect(info?.bedTempMin == nil)
-        #expect(info?.dryingTime == nil)
     }
 
     @Test("CustomFilamentInfo is linked with ID fields only")

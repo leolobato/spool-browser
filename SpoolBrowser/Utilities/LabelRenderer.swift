@@ -8,8 +8,6 @@ struct LabelData {
     let colorHex: String
     let nozzleTemp: String?
     let bedTemp: String?
-    let printSpeed: String?
-    let drying: String?
     let qrContent: String
     let spoolId: Int
 }
@@ -61,21 +59,6 @@ struct LabelRenderer {
 
         let nozzleTemp = formatRange(extra, key: "nozzle_temp", suffix: "\u{00B0}C")
         let bedTemp = formatRange(extra, key: "bed_temp", suffix: "\u{00B0}C")
-        let printSpeed = formatRange(extra, key: "printing_speed", suffix: " mm/s")
-
-        let dryingTemp = formatRange(extra, key: "drying_temperature", suffix: "\u{00B0}C")
-        let dryingTime = extra?["drying_time"].flatMap { Int($0) }
-
-        let drying: String?
-        if let dt = dryingTemp, let dh = dryingTime {
-            drying = "\(dt) / \(dh)h"
-        } else if let dt = dryingTemp {
-            drying = dt
-        } else if let dh = dryingTime {
-            drying = "\(dh)h"
-        } else {
-            drying = nil
-        }
 
         let baseURL = spoolmanURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         let qrContent = "\(baseURL)/spool/show/\(spool.id)"
@@ -87,8 +70,6 @@ struct LabelRenderer {
             colorHex: "#\(rawHex.uppercased())",
             nozzleTemp: nozzleTemp,
             bedTemp: bedTemp,
-            printSpeed: printSpeed,
-            drying: drying,
             qrContent: qrContent,
             spoolId: spool.id
         )
@@ -268,12 +249,6 @@ struct LabelRenderer {
         }
         if let bed = data.bedTemp {
             props.append(("Bed:", bed))
-        }
-        if let speed = data.printSpeed {
-            props.append(("Speed:", speed))
-        }
-        if let drying = data.drying {
-            props.append(("Drying:", drying))
         }
 
         for (i, (label, value)) in props.enumerated() {

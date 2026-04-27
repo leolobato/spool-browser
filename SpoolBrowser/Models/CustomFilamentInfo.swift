@@ -7,11 +7,6 @@ struct CustomFilamentInfo: Sendable {
     let trayType: String
     let bedTempMin: Int?
     let bedTempMax: Int?
-    let dryingTempMin: Int?
-    let dryingTempMax: Int?
-    let dryingTime: Int?
-    let printSpeedMin: Int?
-    let printSpeedMax: Int?
 
     init(
         amsFilamentId: String,
@@ -19,12 +14,7 @@ struct CustomFilamentInfo: Sendable {
         nozzleTempMax: Int? = nil,
         trayType: String = "",
         bedTempMin: Int? = nil,
-        bedTempMax: Int? = nil,
-        dryingTempMin: Int? = nil,
-        dryingTempMax: Int? = nil,
-        dryingTime: Int? = nil,
-        printSpeedMin: Int? = nil,
-        printSpeedMax: Int? = nil
+        bedTempMax: Int? = nil
     ) {
         self.amsFilamentId = amsFilamentId
         self.nozzleTempMin = nozzleTempMin
@@ -32,11 +22,6 @@ struct CustomFilamentInfo: Sendable {
         self.trayType = trayType
         self.bedTempMin = bedTempMin
         self.bedTempMax = bedTempMax
-        self.dryingTempMin = dryingTempMin
-        self.dryingTempMax = dryingTempMax
-        self.dryingTime = dryingTime
-        self.printSpeedMin = printSpeedMin
-        self.printSpeedMax = printSpeedMax
     }
 
     init?(filament: Filament) {
@@ -69,21 +54,6 @@ struct CustomFilamentInfo: Sendable {
         } else {
             self.bedTempMin = nil
             self.bedTempMax = nil
-        }
-        if let range = Self.extractRange(extra, key: "drying_temperature") {
-            self.dryingTempMin = range.0
-            self.dryingTempMax = range.1
-        } else {
-            self.dryingTempMin = nil
-            self.dryingTempMax = nil
-        }
-        self.dryingTime = Self.extractInt(extra, key: "drying_time")
-        if let range = Self.extractRange(extra, key: "printing_speed") {
-            self.printSpeedMin = range.0
-            self.printSpeedMax = range.1
-        } else {
-            self.printSpeedMin = nil
-            self.printSpeedMax = nil
         }
     }
 
@@ -131,11 +101,5 @@ struct CustomFilamentInfo: Sendable {
               arr.count == 2
         else { return nil }
         return (arr[0], arr[1])
-    }
-
-    /// Extracts an integer field stored as a plain number string.
-    private static func extractInt(_ extra: [String: String], key: String) -> Int? {
-        guard let value = extra[key], !value.isEmpty else { return nil }
-        return Int(value)
     }
 }

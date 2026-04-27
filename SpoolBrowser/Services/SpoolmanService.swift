@@ -93,9 +93,6 @@ final class SpoolmanService {
             "ams_filament_type": encodeText(profile.filamentType),
             "nozzle_temp": encodeRange(profile.nozzleTempMin, profile.nozzleTempMax),
             "bed_temp": encodeRange(profile.bedTempMin, profile.bedTempMax),
-            "drying_temperature": encodeRange(profile.dryingTempMin, profile.dryingTempMax),
-            "drying_time": encodeInt(profile.dryingTime),
-            "printing_speed": encodeRange(profile.printSpeedMin, profile.printSpeedMax),
         ]
         try await patchFilamentExtra(id: id, extra: extra)
     }
@@ -124,9 +121,6 @@ final class SpoolmanService {
         ("ams_filament_type", "AMS Filament Type", "text", nil),
         ("nozzle_temp", "Nozzle Temperature", "integer_range", "\u{00B0}C"),
         ("bed_temp", "Bed Temperature", "integer_range", "\u{00B0}C"),
-        ("drying_temperature", "Drying Temperature", "integer_range", "\u{00B0}C"),
-        ("drying_time", "Drying Time", "integer", "h"),
-        ("printing_speed", "Printing Speed", "integer_range", "mm/s"),
     ]
 
     func missingExtraFields() async throws -> [String] {
@@ -175,11 +169,6 @@ final class SpoolmanService {
     /// Encodes an integer_range value as "[min, max]".
     private func encodeRange(_ min: Int, _ max: Int) -> String {
         "[\(min), \(max)]"
-    }
-
-    /// Encodes an integer value as a plain number string.
-    private func encodeInt(_ value: Int) -> String {
-        String(value)
     }
 
     // MARK: - Private

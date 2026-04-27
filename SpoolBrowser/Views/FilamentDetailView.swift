@@ -56,15 +56,6 @@ struct FilamentDetailView: View {
                     if let min = info.bedTempMin, let max = info.bedTempMax {
                         LabeledContent("Bed Temp", value: "\(min)-\(max)\u{00B0}C")
                     }
-                    if let min = info.dryingTempMin, let max = info.dryingTempMax {
-                        LabeledContent("Drying Temp", value: "\(min)-\(max)\u{00B0}C")
-                    }
-                    if let dryTime = info.dryingTime {
-                        LabeledContent("Drying Time", value: "\(dryTime)h")
-                    }
-                    if let min = info.printSpeedMin, let max = info.printSpeedMax {
-                        LabeledContent("Print Speed", value: "\(min)-\(max) mm/s")
-                    }
                 }
             }
         }

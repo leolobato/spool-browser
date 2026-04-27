@@ -89,12 +89,6 @@ struct SpoolDetailView: View {
                 if let temp = params.bedTemp {
                     LabeledContent("Bed Temp", value: temp)
                 }
-                if let speed = params.printSpeed {
-                    LabeledContent("Print Speed", value: speed)
-                }
-                if let drying = params.drying {
-                    LabeledContent("Drying", value: drying)
-                }
             }
 
             // Slicer Link Status

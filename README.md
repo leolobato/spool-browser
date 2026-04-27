@@ -1,12 +1,12 @@
 # SpoolBrowser
 
-iOS app for browsing [Spoolman](https://github.com/Donkie/Spoolman) filament spools with BambuStudio and BLE label printer integration.
+iOS app for browsing [Spoolman](https://github.com/Donkie/Spoolman) filament spools with Bambu Lab printer and BLE label printer integration.
 
 ## Features
 
 - Browse spools and filaments from a Spoolman server
-- Link BambuStudio filament profiles to Spoolman filaments via [SpoolHelper](#related)
-- Set active filament in BambuStudio by activating profiles through SpoolHelper
+- Link Bambu Lab filament profiles to Spoolman filaments via [bambu-spool-helper](https://github.com/leolobato/bambu-spool-helper)
+- Activate filament profiles on a Bambu printer's AMS via bambu-spool-helper (MQTT)
 - Print physical spool labels on a Phomemo M110 thermal label printer via Bluetooth
 - Write spool URLs to NFC tags and scan them to jump to spool details
 - Scan QR codes to look up spools
@@ -26,18 +26,12 @@ The `no-rfid` branch removes all NFC tag reading/writing features. Use this bran
 
 - iOS 18.0+
 - A running [Spoolman](https://github.com/Donkie/Spoolman) server instance
-- [SpoolHelper](../spool-helper/) macOS companion app (optional, for BambuStudio profile integration)
+- [bambu-spool-helper](https://github.com/leolobato/bambu-spool-helper) companion service (optional, for AMS filament activation and profile linking)
 - Phomemo M110 label printer (optional, for physical label printing)
 
 ## Building
 
 The project uses [XcodeGen](https://github.com/yonaskolb/XcodeGen) to generate the Xcode project from `project.yml`.
-
-```bash
-xcodegen generate
-xcodebuild build -scheme SpoolBrowser -destination 'platform=iOS Simulator,name=iPhone 16'
-xcodebuild test -scheme SpoolBrowser -destination 'platform=iOS Simulator,name=iPhone 16'
-```
 
 To sign the app for a physical device, copy the example config and set your Apple Development Team ID:
 
@@ -51,7 +45,7 @@ xcodegen generate
 
 ## Label Printing
 
-SpoolBrowser can print spool information labels on Phomemo M110 thermal label printers over Bluetooth Low Energy. Labels include the vendor logo, material type, color name, printing parameters (nozzle/bed temps, speed, drying), and a QR code linking back to the spool in Spoolman.
+SpoolBrowser can print spool information labels on [Phomemo M110](https://phomemo.com/en-de/products/m110-label-maker) thermal label printers over Bluetooth Low Energy. Labels include the vendor logo, material type, color name, printing parameters (nozzle/bed temps), and a QR code linking back to the spool in Spoolman.
 
 The label format, layout, and vendor logos are based on [3dfilamentprofiles.com](https://3dfilamentprofiles.com) by [Mark's Maker Space](https://github.com/MarksMakerSpace/filament-profiles).
 
@@ -66,7 +60,7 @@ SpoolBrowser registers two URL schemes: `spoolbrowser://` and `spoolman://`.
 
 ## Spoolman Extra Fields
 
-BambuStudio profile data is stored as custom extra fields on Spoolman filaments:
+Bambu Lab filament profile data (sourced from OrcaSlicer via bambu-spool-helper) is stored as custom extra fields on Spoolman filaments:
 
 | Key | Type | Format | Example |
 |---|---|---|---|
@@ -74,15 +68,14 @@ BambuStudio profile data is stored as custom extra fields on Spoolman filaments:
 | `ams_filament_type` | text | JSON-quoted string | `"PLA"` |
 | `nozzle_temp` | integer_range | `[min, max]` | `[190, 230]` |
 | `bed_temp` | integer_range | `[min, max]` | `[55, 65]` |
-| `drying_temperature` | integer_range | `[min, max]` | `[40, 55]` |
-| `drying_time` | integer | plain number | `8` |
-| `printing_speed` | integer_range | `[min, max]` | `[40, 100]` |
-
-Text fields are JSON-encoded -- the raw stored value for `"GFSA00"` is `"\"GFSA00\""`. Missing fields are created automatically via `POST /api/v1/field/filament/{key}`.
 
 ## Credits
 
-- Vendor logos and label format: [3dfilamentprofiles.com](https://3dfilamentprofiles.com) by [Mark's Maker Space](https://github.com/MarksMakerSpace/filament-profiles)
+Vendor logos and label format: [3dfilamentprofiles.com](https://3dfilamentprofiles.com) by [Mark's Maker Space](https://github.com/MarksMakerSpace/filament-profiles)
+
+## License
+
+SpoolBrowser is released under the [MIT License](LICENSE) — © 2025 Leonardo Lobato. You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided the copyright notice and license text are retained. The software is provided "as is", without warranty of any kind.
 
 ## Disclaimer
 
@@ -90,4 +83,4 @@ This project was built almost entirely through agentic programming using [Claude
 
 ## Related
 
-[bambu-spool-helper](../bambu-spool-helper/) -- FastAPI companion service that reads OrcaSlicer profiles and exposes them over HTTP for SpoolBrowser to use.
+[bambu-spool-helper](https://github.com/leolobato/bambu-spool-helper) -- FastAPI companion service that pulls Bambu Lab filament profiles from [orcaslicer-cli](https://github.com/leolobato/orcaslicer-cli), exposes them over HTTP for SpoolBrowser to link to Spoolman filaments, and activates them on the printer's AMS via MQTT.

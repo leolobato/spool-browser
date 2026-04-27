@@ -55,8 +55,6 @@ struct Spool: Codable, Identifiable, Hashable, Sendable {
     struct CustomParameters {
         let nozzleTemp: String?
         let bedTemp: String?
-        let printSpeed: String?
-        let drying: String?
 
         init(filament: Filament?) {
             let extra = filament?.extra
@@ -75,25 +73,6 @@ struct Spool: Codable, Identifiable, Hashable, Sendable {
                 bedTemp = "\(temp)\u{00B0}C"
             } else {
                 bedTemp = nil
-            }
-
-            if let range = Self.extractRange(extra, key: "printing_speed") {
-                printSpeed = Self.formatRange(range.0, range.1, unit: "mm/s")
-            } else {
-                printSpeed = nil
-            }
-
-            let tempRange = Self.extractRange(extra, key: "drying_temperature")
-            let dryingTime = extra?["drying_time"].flatMap { Int($0) }
-            switch (tempRange, dryingTime) {
-            case let (range?, time?):
-                drying = "\(Self.formatRange(range.0, range.1, unit: "\u{00B0}C")) / \(time)h"
-            case let (range?, nil):
-                drying = Self.formatRange(range.0, range.1, unit: "\u{00B0}C")
-            case let (nil, time?):
-                drying = "\(time)h"
-            case (nil, nil):
-                drying = nil
             }
         }
 

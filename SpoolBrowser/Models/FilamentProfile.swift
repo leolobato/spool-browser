@@ -9,11 +9,6 @@ struct FilamentProfile: Codable, Identifiable, Hashable, Sendable {
     let nozzleTempMax: Int
     let bedTempMin: Int
     let bedTempMax: Int
-    let dryingTempMin: Int
-    let dryingTempMax: Int
-    let dryingTime: Int
-    let printSpeedMin: Int
-    let printSpeedMax: Int
     let source: String
 
     var id: String { "\(settingId)-\(filamentId)" }
@@ -27,10 +22,5 @@ struct FilamentProfile: Codable, Identifiable, Hashable, Sendable {
         case nozzleTempMax = "nozzle_temp_max"
         case bedTempMin = "bed_temp_min"
         case bedTempMax = "bed_temp_max"
-        case dryingTempMin = "drying_temp_min"
-        case dryingTempMax = "drying_temp_max"
-        case dryingTime = "drying_time"
-        case printSpeedMin = "print_speed_min"
-        case printSpeedMax = "print_speed_max"
     }
 }
