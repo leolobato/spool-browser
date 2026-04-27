@@ -73,6 +73,21 @@ Bambu Lab filament profile data (sourced from OrcaSlicer via bambu-spool-helper)
 
 Vendor logos and label format: [3dfilamentprofiles.com](https://3dfilamentprofiles.com) by [Mark's Maker Space](https://github.com/MarksMakerSpace/filament-profiles)
 
+## Related Projects
+
+SpoolBrowser is the **phone client for Bambu Spool Helper** in a suite of self-hosted projects that together replace the Bambu Handy app for printers in **Developer Mode** — keeping everything on your LAN, with no Bambu cloud.
+
+**Self-hosted services**
+
+- **[bambu-gateway](https://github.com/leolobato/bambu-gateway)** — Printer control plane and slicing web app. Talks to printers over MQTT/FTPS to monitor status, send commands, and upload jobs. Slices and prints 3MF files from the browser using `orcaslicer-cli`.
+- **[orcaslicer-cli](https://github.com/leolobato/orcaslicer-cli)** — Headless OrcaSlicer wrapped in a REST API. Owns the filament/process/machine profile catalog (including custom user profiles) and does the actual slicing. Other services in the suite call it for slicing and profile data.
+- **[bambu-spool-helper](https://github.com/leolobato/bambu-spool-helper)** — Bridge between [Spoolman](https://github.com/Donkie/Spoolman) and the printer's AMS. Links real spools to Bambu filament profiles (via `orcaslicer-cli`) and pushes the settings to a chosen tray over MQTT.
+
+**iOS apps**
+
+- **[bambu-gateway-ios](https://github.com/leolobato/bambu-gateway-ios)** — Phone client for `bambu-gateway`. Browse printers, import 3MF files (including from MakerWorld), preview G-code, and start prints. Live Activities and push notifications for print state changes.
+- **SpoolBrowser** — this project.
+
 ## License
 
 SpoolBrowser is released under the [MIT License](LICENSE) — © 2025 Leonardo Lobato. You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided the copyright notice and license text are retained. The software is provided "as is", without warranty of any kind.
@@ -80,7 +95,3 @@ SpoolBrowser is released under the [MIT License](LICENSE) — © 2025 Leonardo L
 ## Disclaimer
 
 This project was built almost entirely through agentic programming using [Claude Code](https://claude.ai/code). The architecture, implementation, and tests were generated through AI-assisted development with human guidance and review.
-
-## Related
-
-[bambu-spool-helper](https://github.com/leolobato/bambu-spool-helper) -- FastAPI companion service that pulls Bambu Lab filament profiles from [orcaslicer-cli](https://github.com/leolobato/orcaslicer-cli), exposes them over HTTP for SpoolBrowser to link to Spoolman filaments, and activates them on the printer's AMS via MQTT.
