@@ -229,11 +229,11 @@ enum SpoolHelperError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .notAvailable:
-            "SpoolHelper is not available on the network."
+            "bambu-spool-helper is not available on the network."
         case .notLinked:
             "This spool is not linked to a slicer profile."
         case .requestFailed:
-            "Failed to communicate with SpoolHelper."
+            "Failed to communicate with bambu-spool-helper."
         case .activationFailed(let message):
             message
         }

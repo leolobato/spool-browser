@@ -107,7 +107,7 @@ struct SettingsView: View {
                         action: testHelperConnection
                     )
                 } header: {
-                    Text("SpoolHelper")
+                    Text("bambu-spool-helper")
                 } footer: {
                     Text("Auto-discovered via Bonjour, or enter the address manually.")
                 }
