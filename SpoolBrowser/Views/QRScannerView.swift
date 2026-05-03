@@ -139,20 +139,60 @@ struct QRScannerView: View {
 struct DataScannerRepresentable: UIViewControllerRepresentable {
     var onCodeScanned: (String) -> Void
 
-    func makeUIViewController(context: Context) -> DataScannerViewController {
+    func makeUIViewController(context: Context) -> ScannerHostViewController {
         let scanner = DataScannerViewController(
             recognizedDataTypes: [.barcode(symbologies: [.qr])],
             isHighlightingEnabled: true
         )
         scanner.delegate = context.coordinator
-        try? scanner.startScanning()
-        return scanner
+        return ScannerHostViewController(scanner: scanner)
     }
 
-    func updateUIViewController(_ uiViewController: DataScannerViewController, context: Context) {}
+    func updateUIViewController(_ uiViewController: ScannerHostViewController, context: Context) {}
+
+    static func dismantleUIViewController(_ uiViewController: ScannerHostViewController, coordinator: Coordinator) {
+        uiViewController.scanner.stopScanning()
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(onCodeScanned: onCodeScanned)
+    }
+
+    final class ScannerHostViewController: UIViewController {
+        let scanner: DataScannerViewController
+
+        init(scanner: DataScannerViewController) {
+            self.scanner = scanner
+            super.init(nibName: nil, bundle: nil)
+        }
+
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) is not supported")
+        }
+
+        override func viewDidLoad() {
+            super.viewDidLoad()
+            addChild(scanner)
+            scanner.view.frame = view.bounds
+            scanner.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            view.addSubview(scanner.view)
+            scanner.didMove(toParent: self)
+        }
+
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            guard !scanner.isScanning else { return }
+            do {
+                try scanner.startScanning()
+            } catch {
+                print("DataScannerViewController.startScanning failed: \(error)")
+            }
+        }
+
+        override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            scanner.stopScanning()
+        }
     }
 
     class Coordinator: NSObject, DataScannerViewControllerDelegate {
