@@ -35,6 +35,10 @@ struct Spool: Codable, Identifiable, Hashable, Sendable {
         filament?.displayName ?? "Unknown Spool"
     }
 
+    var displayNumber: String {
+        "#\(id)"
+    }
+
     var vendorName: String? {
         filament?.vendor?.name
     }

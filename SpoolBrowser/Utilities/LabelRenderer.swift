@@ -91,7 +91,7 @@ struct LabelRenderer {
             drawBrand(data.brand, in: gc, scale: s)
 
             // Material bar
-            drawMaterialBar(data.material, in: gc, scale: s)
+            drawMaterialBar(material: data.material, spoolNumber: "#\(data.spoolId)", in: gc, scale: s)
 
             // Color name
             drawText(
@@ -218,23 +218,38 @@ struct LabelRenderer {
         }
     }
 
-    private static func drawMaterialBar(_ text: String, in gc: CGContext, scale s: CGFloat) {
+    private static func drawMaterialBar(material: String, spoolNumber: String, in gc: CGContext, scale s: CGFloat) {
         let barRect = CGRect(x: barX * s, y: barY * s, width: barW * s, height: barH * s)
 
         gc.setFillColor(UIColor.black.cgColor)
         gc.fill(barRect)
 
-        let interiorW = (barW - barTextPad * 2) * s
-        let barFont = autoShrinkFont(text: text, bold: true, maxWidth: interiorW, startSize: 22 * s, minSize: 10 * s)
+        let numberFont = font(bold: true, size: 16 * s)
+        let numberAttrs: [NSAttributedString.Key: Any] = [
+            .font: numberFont,
+            .foregroundColor: UIColor.white,
+        ]
+        let numberSize = (spoolNumber as NSString).size(withAttributes: numberAttrs)
+        let numberX = (barX + barW - barTextPad) * s - numberSize.width
+        let numberY = barY * s + (barH * s - numberSize.height) / 2
+
+        (spoolNumber as NSString).draw(
+            at: CGPoint(x: numberX, y: numberY),
+            withAttributes: numberAttrs
+        )
+
+        let gap: CGFloat = 10
+        let interiorW = (barW - barTextPad * 2) * s - numberSize.width - gap * s
+        let barFont = autoShrinkFont(text: material, bold: true, maxWidth: interiorW, startSize: 22 * s, minSize: 10 * s)
 
         let attrs: [NSAttributedString.Key: Any] = [
             .font: barFont,
             .foregroundColor: UIColor.white,
         ]
-        let textSize = (text as NSString).size(withAttributes: attrs)
+        let textSize = (material as NSString).size(withAttributes: attrs)
         let textY = barY * s + (barH * s - textSize.height) / 2
 
-        (text as NSString).draw(
+        (material as NSString).draw(
             at: CGPoint(x: (barX + barTextPad) * s, y: textY),
             withAttributes: attrs
         )

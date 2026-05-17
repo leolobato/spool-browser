@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import UIKit
 @testable import SpoolBrowser
 
 @Suite("Model Decoding")
@@ -48,6 +49,46 @@ struct ModelDecodingTests {
         #expect(spool.remainingWeight == 850.5)
         #expect(spool.location == "AMS Tray 1")
         #expect(spool.archived == false)
+    }
+
+    @Test("Spool formats display number")
+    func spoolDisplayNumber() {
+        let spool = Spool(
+            id: 42,
+            filament: nil,
+            remainingWeight: nil,
+            usedWeight: nil,
+            remainingLength: nil,
+            usedLength: nil,
+            location: nil,
+            comment: nil,
+            lotNr: nil,
+            registeredDate: nil,
+            firstUsedDate: nil,
+            lastUsedDate: nil,
+            archived: nil
+        )
+
+        #expect(spool.displayNumber == "#42")
+    }
+
+    @Test("Label renderer draws spool number on material bar")
+    func labelRendererDrawsSpoolNumberOnMaterialBar() throws {
+        let data = LabelData(
+            brand: "Polymaker",
+            material: "PLA",
+            colorName: "Galaxy Black",
+            colorHex: "#1A1A1A",
+            nozzleTemp: "190-230\u{00B0}C",
+            bedTemp: "55-65\u{00B0}C",
+            qrContent: "https://spoolman.example/spool/show/42",
+            spoolId: 42
+        )
+
+        let image = LabelRenderer.renderPreview(data: data)
+        let rightBarTextArea = CGRect(x: 650, y: 140, width: 120, height: 60)
+
+        #expect(try whitePixelCount(in: image, rect: rightBarTextArea) > 500)
     }
 
     @Test("CustomFilamentInfo extracts linked fields")
@@ -199,4 +240,56 @@ struct ModelDecodingTests {
         }
     }
 
+}
+
+private func whitePixelCount(in image: UIImage, rect: CGRect) throws -> Int {
+    let cgImage = try #require(image.cgImage)
+    let width = cgImage.width
+    let height = cgImage.height
+    let bytesPerPixel = 4
+    let bytesPerRow = width * bytesPerPixel
+    var pixels = [UInt8](repeating: 0, count: height * bytesPerRow)
+
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
+    let context = try #require(CGContext(
+        data: &pixels,
+        width: width,
+        height: height,
+        bitsPerComponent: 8,
+        bytesPerRow: bytesPerRow,
+        space: colorSpace,
+        bitmapInfo: bitmapInfo
+    ))
+    context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+    let scaleX = CGFloat(width) / image.size.width
+    let scaleY = CGFloat(height) / image.size.height
+    let pixelRect = CGRect(
+        x: rect.minX * scaleX,
+        y: rect.minY * scaleY,
+        width: rect.width * scaleX,
+        height: rect.height * scaleY
+    ).integral
+
+    var count = 0
+    let minX = max(Int(pixelRect.minX), 0)
+    let maxX = min(Int(pixelRect.maxX), width)
+    let minY = max(Int(pixelRect.minY), 0)
+    let maxY = min(Int(pixelRect.maxY), height)
+
+    for y in minY..<maxY {
+        for x in minX..<maxX {
+            let index = y * bytesPerRow + x * bytesPerPixel
+            let red = pixels[index]
+            let green = pixels[index + 1]
+            let blue = pixels[index + 2]
+
+            if red > 220, green > 220, blue > 220 {
+                count += 1
+            }
+        }
+    }
+
+    return count
 }

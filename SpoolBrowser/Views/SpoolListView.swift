@@ -226,10 +226,16 @@ private struct SpoolRow: View {
 
             Spacer()
 
-            if let weight = spool.remainingWeight {
-                Text("\(Int(weight))g")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(spool.displayNumber)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+
+                if let weight = spool.remainingWeight {
+                    Text("\(Int(weight))g")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .padding(.vertical, 2)
