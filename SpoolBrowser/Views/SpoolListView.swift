@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum SpoolSortOption: String, CaseIterable {
+    case lastAdded = "Last Added"
     case vendor = "Vendor"
     case material = "Material"
     case colorName = "Color Name"
@@ -48,6 +49,8 @@ struct SpoolListView: View {
             }
         }
         switch sortOption {
+        case .lastAdded:
+            result.sort { $0.id > $1.id }
         case .vendor:
             result.sort { ($0.vendorName ?? "") < ($1.vendorName ?? "") }
         case .material:
