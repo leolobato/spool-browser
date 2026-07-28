@@ -384,3 +384,26 @@ struct AMSStateDecodingTests {
         #expect(state.trays[0].empty)
     }
 }
+
+@Suite("Weigh Spool Math")
+struct WeighSpoolMathTests {
+
+    @Test("Parse weight accepts decimals and comma separators")
+    func parseWeight() {
+        #expect(WeighSpoolSheet.parseWeight("856") == 856)
+        #expect(WeighSpoolSheet.parseWeight("856.5") == 856.5)
+        #expect(WeighSpoolSheet.parseWeight("856,5") == 856.5)
+        #expect(WeighSpoolSheet.parseWeight(" 212 ") == 212)
+        #expect(WeighSpoolSheet.parseWeight("") == nil)
+        #expect(WeighSpoolSheet.parseWeight("abc") == nil)
+        #expect(WeighSpoolSheet.parseWeight("-5") == nil)
+    }
+
+    @Test("Format weight drops trailing zeros")
+    func formatWeight() {
+        #expect(WeighSpoolSheet.formatWeight(644) == "644")
+        #expect(WeighSpoolSheet.formatWeight(644.0) == "644")
+        #expect(WeighSpoolSheet.formatWeight(644.5) == "644.5")
+        #expect(WeighSpoolSheet.formatWeight(0) == "0")
+    }
+}

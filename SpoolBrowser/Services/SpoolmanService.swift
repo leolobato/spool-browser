@@ -81,6 +81,34 @@ final class SpoolmanService {
         }
     }
 
+    func updateSpoolRemainingWeight(id: Int, remainingWeight: Double) async throws {
+        guard let baseURL else { throw SpoolmanError.notConfigured }
+        let url = baseURL.appendingPathComponent("/api/v1/spool/\(id)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body = ["remaining_weight": remainingWeight]
+        request.httpBody = try JSONEncoder().encode(body)
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw SpoolmanError.requestFailed
+        }
+    }
+
+    func updateFilamentSpoolWeight(id: Int, spoolWeight: Double) async throws {
+        guard let baseURL else { throw SpoolmanError.notConfigured }
+        let url = baseURL.appendingPathComponent("/api/v1/filament/\(id)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body = ["spool_weight": spoolWeight]
+        request.httpBody = try JSONEncoder().encode(body)
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw SpoolmanError.requestFailed
+        }
+    }
+
     func testConnection() async throws {
         _ = try await get(path: "/api/v1/health")
     }

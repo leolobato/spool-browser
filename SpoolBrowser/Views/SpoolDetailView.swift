@@ -18,6 +18,7 @@ struct SpoolDetailView: View {
     @State private var showProfilePicker = false
     @State private var isUnlinking = false
     @State private var showLabelPreview = false
+    @State private var showWeighSheet = false
     @AppStorage("spoolmanURL") private var spoolmanURL = ""
 
     init(spool: Spool, spoolmanService: SpoolmanService, spoolHelperService: SpoolHelperService, labelPrinterService: LabelPrinterService) {
@@ -136,6 +137,12 @@ struct SpoolDetailView: View {
             // Actions
             Section {
                 Button {
+                    showWeighSheet = true
+                } label: {
+                    Label("Weigh Spool", systemImage: "scalemass")
+                }
+
+                Button {
                     showLabelPreview = true
                 } label: {
                     Label("Print Label", systemImage: "printer")
@@ -167,6 +174,13 @@ struct SpoolDetailView: View {
                     onLinked: { Task { await refreshSpool() } }
                 )
             }
+        }
+        .sheet(isPresented: $showWeighSheet) {
+            WeighSpoolSheet(
+                spool: spool,
+                spoolmanService: spoolmanService,
+                onSaved: { Task { await refreshSpool() } }
+            )
         }
         .sheet(isPresented: $showLabelPreview) {
             LabelPreviewSheet(
