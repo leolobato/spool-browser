@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 import VisionKit
 
 struct QRScannerView: View {
@@ -10,18 +11,37 @@ struct QRScannerView: View {
     @State private var alertMessage: String?
     @State private var isShowingAlert = false
     @State private var isLoading = false
-    @State private var scannerResetID = UUID()
+    @State private var isCameraAuthorized: Bool?
 
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                if DataScannerViewController.isSupported && DataScannerViewController.isAvailable {
-                    DataScannerRepresentable { code in
+                if !DataScannerViewController.isSupported {
+                    ContentUnavailableView(
+                        "Scanner Not Available",
+                        systemImage: "camera.viewfinder",
+                        description: Text("This device doesn't support barcode scanning.")
+                    )
+                } else if isCameraAuthorized == false {
+                    ContentUnavailableView {
+                        Label("Camera Access Needed", systemImage: "camera.viewfinder")
+                    } description: {
+                        Text("Allow camera access in Settings to scan spool labels.")
+                    } actions: {
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                    }
+                } else if isCameraAuthorized == true {
+                    DataScannerRepresentable(
+                        isActive: selectedTab == .scan && scenePhase == .active
+                    ) { code in
                         handleScannedCode(code)
                     }
-                    .id(scannerResetID)
                     .ignoresSafeArea()
 
                     if isLoading {
@@ -29,15 +49,9 @@ struct QRScannerView: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .background(.ultraThinMaterial)
                     }
-                } else {
-                    ContentUnavailableView(
-                        "Scanner Not Available",
-                        systemImage: "camera.viewfinder",
-                        description: Text("This device doesn't support barcode scanning.")
-                    )
                 }
 
-                if DataScannerViewController.isSupported && DataScannerViewController.isAvailable && !isLoading {
+                if DataScannerViewController.isSupported && isCameraAuthorized == true && !isLoading {
                     Button {
                         readNFC()
                     } label: {
@@ -56,16 +70,20 @@ struct QRScannerView: View {
             } message: {
                 Text(alertMessage ?? "An unknown error occurred.")
             }
-            .onChange(of: selectedTab) { _, newValue in
-                if newValue == .scan && !isLoading {
-                    scannerResetID = UUID()
-                }
+            .task {
+                await updateCameraAuthorization()
             }
-            .onChange(of: scenePhase) { _, newPhase in
-                if newPhase == .active && selectedTab == .scan && !isLoading {
-                    scannerResetID = UUID()
-                }
-            }
+        }
+    }
+
+    private func updateCameraAuthorization() async {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            isCameraAuthorized = true
+        case .notDetermined:
+            isCameraAuthorized = await AVCaptureDevice.requestAccess(for: .video)
+        default:
+            isCameraAuthorized = false
         }
     }
 
@@ -137,6 +155,7 @@ struct QRScannerView: View {
 }
 
 struct DataScannerRepresentable: UIViewControllerRepresentable {
+    var isActive: Bool
     var onCodeScanned: (String) -> Void
 
     func makeUIViewController(context: Context) -> ScannerHostViewController {
@@ -148,10 +167,12 @@ struct DataScannerRepresentable: UIViewControllerRepresentable {
         return ScannerHostViewController(scanner: scanner)
     }
 
-    func updateUIViewController(_ uiViewController: ScannerHostViewController, context: Context) {}
+    func updateUIViewController(_ uiViewController: ScannerHostViewController, context: Context) {
+        uiViewController.isActive = isActive
+    }
 
     static func dismantleUIViewController(_ uiViewController: ScannerHostViewController, coordinator: Coordinator) {
-        uiViewController.scanner.stopScanning()
+        uiViewController.isActive = false
     }
 
     func makeCoordinator() -> Coordinator {
@@ -160,6 +181,18 @@ struct DataScannerRepresentable: UIViewControllerRepresentable {
 
     final class ScannerHostViewController: UIViewController {
         let scanner: DataScannerViewController
+        private var isViewVisible = false
+        private var retryTask: Task<Void, Never>?
+
+        // Scanning is restarted on the same scanner instance rather than
+        // recreating the controller: a second DataScannerViewController can't
+        // start while the previous one still holds the camera.
+        var isActive = false {
+            didSet {
+                guard isActive != oldValue else { return }
+                updateScanningState()
+            }
+        }
 
         init(scanner: DataScannerViewController) {
             self.scanner = scanner
@@ -181,17 +214,43 @@ struct DataScannerRepresentable: UIViewControllerRepresentable {
 
         override func viewDidAppear(_ animated: Bool) {
             super.viewDidAppear(animated)
-            guard !scanner.isScanning else { return }
-            do {
-                try scanner.startScanning()
-            } catch {
-                print("DataScannerViewController.startScanning failed: \(error)")
-            }
+            isViewVisible = true
+            updateScanningState()
         }
 
         override func viewWillDisappear(_ animated: Bool) {
             super.viewWillDisappear(animated)
-            scanner.stopScanning()
+            isViewVisible = false
+            updateScanningState()
+        }
+
+        private func updateScanningState() {
+            retryTask?.cancel()
+            retryTask = nil
+            if isActive && isViewVisible {
+                startScanning(attempt: 0)
+            } else if scanner.isScanning {
+                scanner.stopScanning()
+            }
+        }
+
+        private func startScanning(attempt: Int) {
+            guard isActive, isViewVisible, !scanner.isScanning else { return }
+            do {
+                try scanner.startScanning()
+            } catch {
+                // The camera can be briefly unavailable (right after boot, or
+                // while a previous capture session is tearing down) — retry.
+                guard attempt < 20 else {
+                    print("DataScannerViewController.startScanning failed: \(error)")
+                    return
+                }
+                retryTask = Task { [weak self] in
+                    try? await Task.sleep(for: .milliseconds(500))
+                    guard !Task.isCancelled else { return }
+                    self?.startScanning(attempt: attempt + 1)
+                }
+            }
         }
     }
 
@@ -210,6 +269,16 @@ struct DataScannerRepresentable: UIViewControllerRepresentable {
                   value != lastScannedCode else { return }
             lastScannedCode = value
             onCodeScanned(value)
+        }
+
+        func dataScanner(_ dataScanner: DataScannerViewController, didRemove items: [RecognizedItem], allItems: [RecognizedItem]) {
+            // Allow rescanning the same code once it leaves the frame.
+            for item in items {
+                if case .barcode(let barcode) = item,
+                   barcode.payloadStringValue == lastScannedCode {
+                    lastScannedCode = nil
+                }
+            }
         }
     }
 }
