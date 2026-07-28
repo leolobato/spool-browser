@@ -177,11 +177,11 @@ struct SpoolDetailView: View {
         }
         .confirmationDialog("Select Tray", isPresented: $showTrayPicker) {
             ForEach(0..<4) { tray in
-                Button("Tray \(tray + 1)") {
+                Button("A\(tray + 1)") {
                     sendToHelper(tray: tray)
                 }
             }
-            Button("External Tray") {
+            Button("External Spool") {
                 sendToHelper(tray: 4)
             }
             Button("Cancel", role: .cancel) {}
