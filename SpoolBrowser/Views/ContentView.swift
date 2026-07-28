@@ -10,6 +10,14 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
+            SwiftUI.Tab("AMS", systemImage: "circle.grid.2x2.fill", value: .ams) {
+                AMSView(
+                    spoolmanService: spoolmanService,
+                    spoolHelperService: spoolHelperService,
+                    labelPrinterService: labelPrinterService
+                )
+            }
+
             SwiftUI.Tab("Spools", systemImage: "circle.grid.3x3.fill", value: .spools) {
                 NavigationStack(path: $navigationPath) {
                     SpoolListView(
@@ -51,6 +59,7 @@ struct ContentView: View {
 }
 
 enum AppTab: Hashable {
+    case ams
     case spools
     case scan
     case settings

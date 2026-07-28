@@ -293,3 +293,94 @@ private func whitePixelCount(in image: UIImage, rect: CGRect) throws -> Int {
 
     return count
 }
+
+@Suite("AMS State Decoding")
+struct AMSStateDecodingTests {
+
+    @Test("Decode full AMS snapshot")
+    func decodeAMSState() throws {
+        let json = """
+        {
+            "connected": true,
+            "printer_state": "printing",
+            "active_tray": 1,
+            "trays": [
+                {
+                    "tray": 0,
+                    "label": "A1",
+                    "empty": false,
+                    "tray_type": "PLA",
+                    "tray_color": "#ECE9E2",
+                    "filament_id": "GFA00",
+                    "tray_sub_brands": "PLA Basic",
+                    "remain": 71,
+                    "nozzle_temp_min": 190,
+                    "nozzle_temp_max": 230,
+                    "bed_temp": 55,
+                    "spool_id": 14
+                },
+                {
+                    "tray": 4,
+                    "label": "External Spool",
+                    "empty": false,
+                    "tray_type": "PLA",
+                    "tray_color": "#0D9488",
+                    "filament_id": "",
+                    "tray_sub_brands": "",
+                    "remain": -1,
+                    "nozzle_temp_min": 0,
+                    "nozzle_temp_max": 0,
+                    "bed_temp": 0,
+                    "spool_id": null
+                }
+            ]
+        }
+        """
+
+        let state = try JSONDecoder().decode(AMSState.self, from: json.data(using: .utf8)!)
+
+        #expect(state.connected)
+        #expect(state.printerState == "printing")
+        #expect(state.activeTray == 1)
+        #expect(state.trays.count == 2)
+
+        let a1 = state.trays[0]
+        #expect(a1.label == "A1")
+        #expect(!a1.empty)
+        #expect(a1.trayType == "PLA")
+        #expect(a1.trayColor == "#ECE9E2")
+        #expect(a1.filamentId == "GFA00")
+        #expect(a1.traySubBrands == "PLA Basic")
+        #expect(a1.remain == 71)
+        #expect(a1.spoolId == 14)
+        #expect(!a1.isExternal)
+
+        let external = state.trays[1]
+        #expect(external.isExternal)
+        #expect(external.spoolId == nil)
+        #expect(external.remain == -1)
+    }
+
+    @Test("Decode idle AMS state with null active tray")
+    func decodeIdleAMSState() throws {
+        let json = """
+        {
+            "connected": false,
+            "printer_state": null,
+            "active_tray": null,
+            "trays": [
+                {"tray": 1, "label": "A2", "empty": true, "tray_type": "", "tray_color": "",
+                 "filament_id": "", "tray_sub_brands": "", "remain": -1,
+                 "nozzle_temp_min": 0, "nozzle_temp_max": 0, "bed_temp": 0, "spool_id": null}
+            ]
+        }
+        """
+
+        let state = try JSONDecoder().decode(AMSState.self, from: json.data(using: .utf8)!)
+
+        #expect(!state.connected)
+        #expect(state.printerState == nil)
+        #expect(state.activeTray == nil)
+        #expect(state.trays[0].empty)
+    }
+}

@@ -37,9 +37,9 @@ xcodebuild test -scheme SpoolBrowser -destination 'platform=iOS Simulator,name=i
 
 MVVM with `@Observable` services (iOS 17+ Observation framework). All services are `@MainActor`-isolated.
 
-- **Models/** — `Codable`, `Sendable` structs: `Spool`, `Filament`, `Vendor`, `FilamentProfile`, `CustomFilamentInfo`
+- **Models/** — `Codable`, `Sendable` structs: `Spool`, `Filament`, `Vendor`, `FilamentProfile`, `CustomFilamentInfo`, `AMSState`
 - **Services/** — `SpoolmanService` (REST client), `SpoolHelperService` (HTTP), `LabelPrinterService` (CoreBluetooth/BLE)
-- **Views/** — SwiftUI views rooted at `ContentView` (TabView with Spools, Scan, Settings tabs)
+- **Views/** — SwiftUI views rooted at `ContentView` (TabView with Spools, Scan, AMS, Settings tabs)
 - **Utilities/** — `LabelRenderer` (label image + rasterization), `DeepLinkHandler`, `NFCWriter`, `NFCReader`, `Color+Hex`
 - **Resources/Logos/** — ~340 vendor logo PNGs, included as a folder reference in `project.yml`. Looked up via `UIImage(named: "Logos/\(slug)")`.
 
@@ -53,7 +53,7 @@ Settings are stored via `@AppStorage`/UserDefaults.
 
 **SpoolmanService** — REST client for Spoolman API. Fetches spools/filaments, links filaments to Bambu Lab filament profiles, manages extra field creation via `ensureExtraFields()`.
 
-**SpoolHelperService** — HTTP client for the [bambu-spool-helper](https://github.com/leolobato/bambu-spool-helper) companion service (FastAPI). The address is configured manually in Settings (stored under the `spoolHelperAddress` UserDefaults key). HTTP API for fetching Bambu Lab filament profiles (the helper sources them from `orcaslicer-headless`) and activating them on the printer's AMS via MQTT, with tray assignment (0–3 = AMS slots, 4 = external spool). The activation does NOT go through BambuStudio — bambu-spool-helper talks to the printer directly. The Swift type retains the `SpoolHelper` name for historical reasons.
+**SpoolHelperService** — HTTP client for the [bambu-spool-helper](https://github.com/leolobato/bambu-spool-helper) companion service (FastAPI). The address is configured manually in Settings (stored under the `spoolHelperAddress` UserDefaults key). HTTP API for fetching Bambu Lab filament profiles (the helper sources them from `orcaslicer-headless`) and activating them on the printer's AMS via MQTT, with tray assignment (0–3 = AMS slots, 4 = external spool). The activation does NOT go through BambuStudio — bambu-spool-helper talks to the printer directly (or via bambu-gateway when configured). The Swift type retains the `SpoolHelper` name for historical reasons. Also fetches live AMS contents via `GET /ams` (`fetchAMSState()`): per-tray material/color/remain plus `active_tray` (the tray feeding the toolhead) and the bound Spoolman `spool_id` per tray, which the AMS tab resolves to full spools via `SpoolmanService`. The AMS tab grid mirrors the physical AMS Lite arrangement: A1/A4 top row, A2/A3 bottom row.
 
 **LabelPrinterService** — CoreBluetooth BLE wrapper for Phomemo thermal label printers. Scans by known name prefixes (`M02`, `Q1`, `T0`, etc. — M110S variants advertise as `Q199...` not `M110`) and by advertised service UUIDs (`FF00`, `FFE0`, `AE30`). Write characteristic `FF02`, notify `FF03`. ESC/POS raster protocol with 128-byte chunks.
 

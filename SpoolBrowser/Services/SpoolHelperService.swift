@@ -98,6 +98,19 @@ final class SpoolHelperService {
         return try JSONDecoder().decode([FilamentProfile].self, from: data)
     }
 
+    func fetchAMSState() async throws -> AMSState {
+        let base = effectiveAddress
+        guard !base.isEmpty, let url = URL(string: "\(base)/ams") else {
+            throw SpoolHelperError.notAvailable
+        }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 10
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode(AMSState.self, from: data)
+    }
+
     func testConnection() async throws -> String {
         let base = effectiveAddress
         guard !base.isEmpty, let url = URL(string: "\(base)/status") else {

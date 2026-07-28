@@ -5,7 +5,7 @@ struct SpoolBrowserApp: App {
     @State private var spoolmanService = SpoolmanService()
     @State private var spoolHelperService = SpoolHelperService()
     @State private var labelPrinterService = LabelPrinterService()
-    @State private var selectedTab = AppTab.spools
+    @State private var selectedTab = AppTab.ams
     @State private var navigationPath = NavigationPath()
 
     @AppStorage("spoolmanURL") private var spoolmanURL = ""
