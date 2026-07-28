@@ -37,6 +37,7 @@ final class SpoolHelperService {
             "filament_type": info.trayType,
             "color_hex": spool.colorHex ?? "",
             "tray": tray,
+            "spool_id": spool.id,
         ]
         if let nozzleTempMin = info.nozzleTempMin {
             body["nozzle_temp_min"] = nozzleTempMin
@@ -69,9 +70,13 @@ final class SpoolHelperService {
 
         if success {
             return ActivationResult(profileName: profileName, message: message)
-        } else {
-            throw SpoolHelperError.activationFailed(message)
         }
+        // Error responses (e.g. 409 "tray has no UUID yet") carry FastAPI's
+        // `detail` instead of the success/message envelope.
+        if message.isEmpty, let detail = json["detail"] as? String, !detail.isEmpty {
+            throw SpoolHelperError.activationFailed(detail)
+        }
+        throw SpoolHelperError.activationFailed(message)
     }
 
     func fetchProfiles(search: String = "") async throws -> [FilamentProfile] {
