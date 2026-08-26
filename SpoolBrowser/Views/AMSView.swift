@@ -203,19 +203,19 @@ private struct AMSSlotCard: View {
             } else {
                 AMSSwatch(colorHex: swatchHex, size: 52)
 
+                // Reserve the name and vendor rows even when they're short or
+                // missing so every card in the grid lays out identically.
                 VStack(spacing: 1) {
                     Text(displayName)
                         .font(.caption)
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.center)
-                        .lineLimit(2)
+                        .lineLimit(2, reservesSpace: true)
 
-                    if let vendor = spool?.vendorName {
-                        Text(vendor)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
+                    Text(spool?.vendorName ?? " ")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
 
                 if !tray.trayType.isEmpty {
@@ -236,6 +236,7 @@ private struct AMSSlotCard: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, minHeight: 160)
+        .frame(maxHeight: .infinity)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .amsActiveHighlight(isActive)
