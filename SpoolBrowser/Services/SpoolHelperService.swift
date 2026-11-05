@@ -71,12 +71,26 @@ final class SpoolHelperService {
         if success {
             return ActivationResult(profileName: profileName, message: message)
         }
-        // Error responses (e.g. 409 "tray has no UUID yet") carry FastAPI's
-        // `detail` instead of the success/message envelope.
-        if message.isEmpty, let detail = json["detail"] as? String, !detail.isEmpty {
+        if message.isEmpty, let detail = Self.errorDetail(from: json) {
             throw SpoolHelperError.activationFailed(detail)
         }
         throw SpoolHelperError.activationFailed(message)
+    }
+
+    /// Error responses carry FastAPI's `detail` instead of the success/message
+    /// envelope: a string (e.g. 409 "tray has no UUID yet"), or a list of
+    /// `{msg}` objects for 422 validation errors.
+    nonisolated static func errorDetail(from json: [String: Any]) -> String? {
+        if let detail = json["detail"] as? String, !detail.isEmpty {
+            return detail
+        }
+        if let errors = json["detail"] as? [[String: Any]] {
+            let messages = errors.compactMap { $0["msg"] as? String }
+            if !messages.isEmpty {
+                return messages.joined(separator: "\n")
+            }
+        }
+        return nil
     }
 
     func fetchProfiles(search: String = "") async throws -> [FilamentProfile] {

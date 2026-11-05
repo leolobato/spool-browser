@@ -407,3 +407,119 @@ struct WeighSpoolMathTests {
         #expect(WeighSpoolSheet.formatWeight(0) == "0")
     }
 }
+
+@Suite("Tray Spool Picker Ranking")
+struct TraySpoolPickerRankingTests {
+
+    private func makeTray(type: String = "PLA", color: String = "#898989") -> AMSTray {
+        AMSTray(
+            tray: 1, label: "A2", empty: false, trayType: type, trayColor: color,
+            filamentId: "GFA00", traySubBrands: "PLA Basic", remain: 80,
+            nozzleTempMin: 190, nozzleTempMax: 230, bedTemp: 55, spoolId: nil
+        )
+    }
+
+    private func makeSpool(
+        id: Int,
+        name: String = "Spool",
+        material: String = "PLA",
+        color: String? = "898989",
+        linked: Bool = true,
+        archived: Bool = false
+    ) -> Spool {
+        let extra = linked ? ["ams_filament_id": "\"GFA00\""] : [:]
+        let filament = Filament(
+            id: id, name: name, vendor: nil, material: material, density: nil, diameter: nil,
+            weight: nil, spoolWeight: nil, colorHex: color, settingsExtruderTemp: nil,
+            settingsBedTemp: nil, extra: extra
+        )
+        return Spool(
+            id: id, filament: filament, remainingWeight: nil, usedWeight: nil, remainingLength: nil,
+            usedLength: nil, location: nil, comment: nil, lotNr: nil, registeredDate: nil,
+            firstUsedDate: nil, lastUsedDate: nil, archived: archived
+        )
+    }
+
+    @Test("Suggests spools matching material and color, closest first")
+    func suggestsMatches() {
+        let closer = makeSpool(id: 1, color: "8A8A8A")
+        let exact = makeSpool(id: 2, color: "898989")
+        let wrongColor = makeSpool(id: 3, color: "FF0000")
+        let wrongMaterial = makeSpool(id: 4, material: "PETG")
+
+        let sections = TraySpoolRanking.sections(
+            for: [closer, wrongColor, exact, wrongMaterial], tray: makeTray()
+        )
+
+        #expect(sections.suggested.map(\.id) == [2, 1])
+        #expect(sections.others.map(\.id) == [3, 4])
+    }
+
+    @Test("Spools without a profile sort after linkable ones")
+    func unlinkedSortLast() {
+        let unlinked = makeSpool(id: 1, linked: false)
+        let linked = makeSpool(id: 2, color: "8A8A8A")
+        let otherUnlinked = makeSpool(id: 3, material: "PETG", linked: false)
+        let otherLinked = makeSpool(id: 4, material: "PETG")
+
+        let sections = TraySpoolRanking.sections(
+            for: [unlinked, linked, otherUnlinked, otherLinked], tray: makeTray()
+        )
+
+        #expect(sections.suggested.map(\.id) == [2, 1])
+        #expect(sections.others.map(\.id) == [4, 3])
+    }
+
+    @Test("Spool needs a profile and a material type to be activated")
+    func canActivate() {
+        #expect(TraySpoolRanking.canActivate(makeSpool(id: 1)))
+        #expect(!TraySpoolRanking.canActivate(makeSpool(id: 2, linked: false)))
+        #expect(!TraySpoolRanking.canActivate(makeSpool(id: 3, material: "")))
+    }
+
+    @Test("Helper error detail handles strings and validation lists")
+    func errorDetail() {
+        #expect(SpoolHelperService.errorDetail(from: ["detail": "A2 has no UUID"]) == "A2 has no UUID")
+        #expect(SpoolHelperService.errorDetail(from: ["detail": [["msg": "Invalid type"]]]) == "Invalid type")
+        #expect(SpoolHelperService.errorDetail(from: ["detail": ""]) == nil)
+        #expect(SpoolHelperService.errorDetail(from: [:]) == nil)
+    }
+
+    @Test("Archived spools are hidden")
+    func hidesArchived() {
+        let sections = TraySpoolRanking.sections(
+            for: [makeSpool(id: 1, archived: true)], tray: makeTray()
+        )
+
+        #expect(sections.suggested.isEmpty)
+        #expect(sections.others.isEmpty)
+    }
+
+    @Test("Spool without a color is not suggested")
+    func missingColorNotSuggested() {
+        let sections = TraySpoolRanking.sections(
+            for: [makeSpool(id: 1, color: nil)], tray: makeTray()
+        )
+
+        #expect(sections.suggested.isEmpty)
+        #expect(sections.others.map(\.id) == [1])
+    }
+
+    @Test("Color distance ignores hash and alpha")
+    func colorDistance() {
+        #expect(TraySpoolRanking.colorDistance("#898989", "898989FF") == 0)
+        #expect(TraySpoolRanking.colorDistance("000000", "000003") == 3)
+        #expect(TraySpoolRanking.colorDistance("nope", "000000") == nil)
+        #expect(TraySpoolRanking.colorDistance(nil, "000000") == nil)
+    }
+
+    @Test("Search matches name, number, vendor and material")
+    func search() {
+        let spools = [makeSpool(id: 12, name: "Gray"), makeSpool(id: 7, name: "Red", material: "PETG")]
+
+        #expect(TraySpoolRanking.filter(spools, searchText: "gray").map(\.id) == [12])
+        #expect(TraySpoolRanking.filter(spools, searchText: "#7").map(\.id) == [7])
+        #expect(TraySpoolRanking.filter(spools, searchText: "petg").map(\.id) == [7])
+        #expect(TraySpoolRanking.filter(spools, searchText: "  ").count == 2)
+    }
+}

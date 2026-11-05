@@ -8,8 +8,10 @@ struct AMSView: View {
     @State private var amsState: AMSState?
     @State private var spoolsById: [Int: Spool] = [:]
     @State private var isLoading = false
+    @State private var needsReload = false
     @State private var errorMessage: String?
     @State private var navigationPath = NavigationPath()
+    @State private var trayToLink: AMSTray?
 
     /// Physical AMS Lite arrangement: A1 and A4 on top, A2 and A3 below.
     private static let slotOrder = [0, 3, 1, 2]
@@ -28,6 +30,26 @@ struct AMSView: View {
                 }
         }
         .task { await load() }
+        // Reload however the sheet closes: a failed activation can still have
+        // moved the Spoolman binding before the printer command was rejected.
+        .sheet(item: $trayToLink, onDismiss: { Task { await load() } }) { tray in
+            TraySpoolPickerSheet(
+                tray: tray,
+                boundTrayLabels: boundTrayLabels,
+                spoolmanService: spoolmanService,
+                spoolHelperService: spoolHelperService
+            )
+        }
+    }
+
+    private var boundTrayLabels: [Int: String] {
+        var labels: [Int: String] = [:]
+        for tray in amsState?.trays ?? [] {
+            if let spoolId = tray.spoolId {
+                labels[spoolId] = tray.label
+            }
+        }
+        return labels
     }
 
     @ViewBuilder
@@ -112,6 +134,14 @@ struct AMSView: View {
                 AMSSlotCard(tray: tray, spool: spool, isActive: isActive)
             }
             .buttonStyle(.plain)
+        } else if canLink(tray) {
+            Button {
+                trayToLink = tray
+            } label: {
+                AMSSlotCard(tray: tray, spool: nil, isActive: isActive)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Links a spool to this tray")
         } else {
             AMSSlotCard(tray: tray, spool: nil, isActive: isActive)
         }
@@ -129,15 +159,42 @@ struct AMSView: View {
                 AMSExternalCard(tray: tray, spool: spool, isActive: isActive)
             }
             .buttonStyle(.plain)
+        } else if canLink(tray) {
+            Button {
+                trayToLink = tray
+            } label: {
+                AMSExternalCard(tray: tray, spool: nil, isActive: isActive)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Links a spool to this tray")
         } else {
             AMSExternalCard(tray: tray, spool: nil, isActive: isActive)
         }
     }
 
+    private func canLink(_ tray: AMSTray) -> Bool {
+        // A bound tray whose spool hasn't resolved (still loading, or Spoolman
+        // failed) must not offer linking: picking a spool would replace the binding.
+        !tray.empty && tray.spoolId == nil && spoolmanService.isConfigured
+    }
+
     private func load() async {
-        guard spoolHelperService.isAvailable, !isLoading else { return }
+        guard spoolHelperService.isAvailable else { return }
+        // An in-flight load may hold a snapshot from before a link, so run again
+        // after it rather than dropping this request.
+        guard !isLoading else {
+            needsReload = true
+            return
+        }
         isLoading = true
         defer { isLoading = false }
+        repeat {
+            needsReload = false
+            await fetchState()
+        } while needsReload
+    }
+
+    private func fetchState() async {
         do {
             let state = try await spoolHelperService.fetchAMSState()
             amsState = state
