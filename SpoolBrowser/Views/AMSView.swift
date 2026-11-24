@@ -314,8 +314,8 @@ private struct AMSSlotCard: View {
            let total = spool.filament?.weight, total > 0 {
             return min(max(remaining / total, 0), 1)
         }
-        if tray.remain >= 0 {
-            return Double(tray.remain) / 100
+        if let percent = tray.plausibleRemainPercent {
+            return Double(percent) / 100
         }
         return nil
     }
@@ -327,8 +327,11 @@ private struct AMSSlotCard: View {
             }
             return " "
         }
-        if tray.remain >= 0 {
-            return "Not linked · \(tray.remain)%"
+        if let grams = tray.remainingGrams {
+            return "Not linked · ~\(grams) g"
+        }
+        if let percent = tray.plausibleRemainPercent {
+            return "Not linked · \(percent)%"
         }
         return "Not linked"
     }
@@ -408,8 +411,11 @@ private struct AMSExternalCard: View {
         if let spool, let remaining = spool.remainingWeight {
             return "\(Int(remaining)) g"
         }
-        if tray.remain >= 0 {
-            return "\(tray.remain)%"
+        if let grams = tray.remainingGrams {
+            return "~\(grams) g"
+        }
+        if let percent = tray.plausibleRemainPercent {
+            return "\(percent)%"
         }
         return ""
     }
@@ -453,8 +459,12 @@ private struct AMSRemainBar: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(.quaternary)
+                // No track when the amount is unknown: an empty gauge would
+                // read as an empty spool. The frame still reserves the space.
+                if fraction != nil {
+                    Capsule()
+                        .fill(.quaternary)
+                }
                 if let fraction {
                     Capsule()
                         .fill(Color(hex: colorHex) ?? Color.accentColor)

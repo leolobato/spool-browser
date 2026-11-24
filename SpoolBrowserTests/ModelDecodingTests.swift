@@ -314,6 +314,7 @@ struct AMSStateDecodingTests {
                     "filament_id": "GFA00",
                     "tray_sub_brands": "PLA Basic",
                     "remain": 71,
+                    "remaining_grams": 540,
                     "nozzle_temp_min": 190,
                     "nozzle_temp_max": 230,
                     "bed_temp": 55,
@@ -352,6 +353,8 @@ struct AMSStateDecodingTests {
         #expect(a1.filamentId == "GFA00")
         #expect(a1.traySubBrands == "PLA Basic")
         #expect(a1.remain == 71)
+        #expect(a1.remainingGrams == 540)
+        #expect(a1.plausibleRemainPercent == 71)
         #expect(a1.spoolId == 14)
         #expect(!a1.isExternal)
 
@@ -359,6 +362,21 @@ struct AMSStateDecodingTests {
         #expect(external.isExternal)
         #expect(external.spoolId == nil)
         #expect(external.remain == -1)
+        // Older helpers omit remaining_grams entirely.
+        #expect(external.remainingGrams == nil)
+        #expect(external.plausibleRemainPercent == nil)
+    }
+
+    @Test("A reported 0% is treated as unknown, not empty")
+    func zeroRemainIsUnknown() throws {
+        let json = """
+        {"tray": 2, "label": "A3", "empty": false, "tray_type": "PLA", "tray_color": "",
+         "filament_id": "", "tray_sub_brands": "", "remain": 0, "remaining_grams": null,
+         "nozzle_temp_min": 0, "nozzle_temp_max": 0, "bed_temp": 0, "spool_id": null}
+        """
+        let tray = try JSONDecoder().decode(AMSTray.self, from: json.data(using: .utf8)!)
+        #expect(tray.remainingGrams == nil)
+        #expect(tray.plausibleRemainPercent == nil)
     }
 
     @Test("Decode idle AMS state with null active tray")
